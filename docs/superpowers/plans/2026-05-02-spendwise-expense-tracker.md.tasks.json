@@ -1,0 +1,117 @@
+{
+  "planPath": "docs/superpowers/plans/2026-05-02-spendwise-expense-tracker.md",
+  "tasks": [
+    {
+      "id": 0,
+      "subject": "Task 0: Project Scaffolding & Gradle Setup",
+      "status": "pending",
+      "description": "**Goal:** Create Android project with Gradle version catalog, all dependencies, and package structure.\n\n**Files:** build.gradle.kts, app/build.gradle.kts, gradle/libs.versions.toml, settings.gradle.kts, AndroidManifest.xml, SpendWiseApp.kt\n\n```json:metadata\n{\"files\": [\"build.gradle.kts\", \"app/build.gradle.kts\", \"gradle/libs.versions.toml\", \"settings.gradle.kts\"], \"verifyCommand\": \"./gradlew assembleDebug\", \"acceptanceCriteria\": [\"Project builds successfully\", \"All dependencies resolve\", \"App launches to blank Compose screen\"]}\n```"
+    },
+    {
+      "id": 1,
+      "subject": "Task 1: Room Database — Entities, DAOs, and Database",
+      "status": "pending",
+      "blockedBy": [0],
+      "description": "**Goal:** Create Room database with Expense, Category, Budget entities, DAOs with Flow queries, default categories.\n\n```json:metadata\n{\"files\": [\"data/local/entity/ExpenseEntity.kt\", \"data/local/dao/ExpenseDao.kt\", \"data/local/AppDatabase.kt\"], \"verifyCommand\": \"./gradlew connectedAndroidTest\", \"acceptanceCriteria\": [\"Entities compile with Room annotations\", \"DAOs return Flow\", \"Instrumented tests pass\"]}\n```"
+    },
+    {
+      "id": 2,
+      "subject": "Task 2: Domain Layer — Models, Repository Interfaces, and Use Cases",
+      "status": "pending",
+      "blockedBy": [1],
+      "description": "**Goal:** Domain models, repository interfaces, GetMonthPeriodUseCase with salary-day boundary calculation.\n\n```json:metadata\n{\"files\": [\"domain/model/MonthPeriod.kt\", \"domain/usecase/GetMonthPeriodUseCase.kt\"], \"verifyCommand\": \"./gradlew test\", \"acceptanceCriteria\": [\"MonthPeriod calculates salary-day boundaries\", \"Unit tests pass for edge cases\"]}\n```"
+    },
+    {
+      "id": 3,
+      "subject": "Task 3: Data Layer — Repository Implementations and DI Setup",
+      "status": "pending",
+      "blockedBy": [1, 2],
+      "description": "**Goal:** Repository impls, DataStore preferences, Koin DI modules.\n\n```json:metadata\n{\"files\": [\"di/AppModule.kt\", \"data/repository/ExpenseRepositoryImpl.kt\"], \"verifyCommand\": \"./gradlew test\", \"acceptanceCriteria\": [\"Repositories map entities to domain models\", \"Koin graph resolves\", \"DataStore persists preferences\"]}\n```"
+    },
+    {
+      "id": 4,
+      "subject": "Task 4: Theme, Design System, and Navigation Shell",
+      "status": "pending",
+      "blockedBy": [0],
+      "description": "**Goal:** Material 3 theme with dynamic colors, bottom nav, type-safe navigation.\n\n```json:metadata\n{\"files\": [\"ui/theme/Theme.kt\", \"ui/navigation/AppNavGraph.kt\", \"ui/MainActivity.kt\"], \"verifyCommand\": \"./gradlew assembleDebug\", \"acceptanceCriteria\": [\"Dynamic colors on Android 12+\", \"Bottom nav with 4 tabs\", \"Type-safe navigation routes\"]}\n```"
+    },
+    {
+      "id": 5,
+      "subject": "Task 5: Add Expense Screen — Quick Entry and Detailed Mode",
+      "status": "pending",
+      "blockedBy": [3, 4],
+      "description": "**Goal:** Dual-mode Add Expense: bottom sheet quick entry + full-screen detailed form.\n\n```json:metadata\n{\"files\": [\"ui/addexpense/AddExpenseSheet.kt\", \"ui/addexpense/AddExpenseViewModel.kt\"], \"verifyCommand\": \"./gradlew test\", \"acceptanceCriteria\": [\"Quick entry saves with amount + category\", \"Detailed mode has all fields\", \"Validation works\"]}\n```"
+    },
+    {
+      "id": 6,
+      "subject": "Task 6: Home Dashboard Screen",
+      "status": "pending",
+      "blockedBy": [3, 4, 5],
+      "description": "**Goal:** Dashboard with month summary card, category chips, recent expenses list.\n\n```json:metadata\n{\"files\": [\"ui/home/HomeScreen.kt\", \"ui/home/HomeViewModel.kt\"], \"verifyCommand\": \"./gradlew test\", \"acceptanceCriteria\": [\"Month summary with budget progress\", \"Recent expenses with swipe-to-delete\"]}\n```"
+    },
+    {
+      "id": 7,
+      "subject": "Task 7: Monthly Analytics Screen with Charts",
+      "status": "pending",
+      "blockedBy": [3, 4],
+      "description": "**Goal:** Donut chart, bar chart (daily/weekly), budget vs actual progress bars using Vico.\n\n```json:metadata\n{\"files\": [\"ui/analytics/AnalyticsScreen.kt\", \"ui/analytics/components/CategoryDonutChart.kt\"], \"verifyCommand\": \"./gradlew test\", \"acceptanceCriteria\": [\"Donut chart with category breakdown\", \"Bar chart with daily/weekly toggle\", \"Budget vs actual progress bars\"]}\n```"
+    },
+    {
+      "id": 8,
+      "subject": "Task 8: Transaction History Screen with Search and Filters",
+      "status": "pending",
+      "blockedBy": [3, 4],
+      "description": "**Goal:** SearchBar, filter chips, date-grouped expense list with pagination.\n\n```json:metadata\n{\"files\": [\"ui/history/HistoryScreen.kt\", \"ui/history/HistoryViewModel.kt\"], \"verifyCommand\": \"./gradlew test\", \"acceptanceCriteria\": [\"Search with debounce\", \"Multi-criteria filtering\", \"Date-grouped list\"]}\n```"
+    },
+    {
+      "id": 9,
+      "subject": "Task 9: Category Management Screen",
+      "status": "pending",
+      "blockedBy": [3, 4],
+      "description": "**Goal:** Category CRUD with icon picker, color picker, budget setting.\n\n```json:metadata\n{\"files\": [\"ui/categories/CategoriesScreen.kt\", \"ui/categories/components/CategoryEditSheet.kt\"], \"verifyCommand\": \"./gradlew test\", \"acceptanceCriteria\": [\"Category CRUD works\", \"Icon and color pickers\", \"Default categories pre-populated\"]}\n```"
+    },
+    {
+      "id": 10,
+      "subject": "Task 10: Settings Screen",
+      "status": "pending",
+      "blockedBy": [3, 4],
+      "description": "**Goal:** Month mode toggle, salary day picker, theme selector, UPI sync toggle.\n\n```json:metadata\n{\"files\": [\"ui/settings/SettingsScreen.kt\", \"ui/settings/SettingsViewModel.kt\"], \"verifyCommand\": \"./gradlew test\", \"acceptanceCriteria\": [\"Month mode toggle works\", \"Salary day picker\", \"Theme persists\"]}\n```"
+    },
+    {
+      "id": 11,
+      "subject": "Task 11: UPI SMS Parsing",
+      "status": "pending",
+      "blockedBy": [3],
+      "description": "**Goal:** BroadcastReceiver + BankSmsParser with regex for SBI, HDFC, ICICI, Axis, Kotak, Paytm. VPA category mapping.\n\n```json:metadata\n{\"files\": [\"sms/BankSmsParser.kt\", \"sms/SmsBroadcastReceiver.kt\"], \"verifyCommand\": \"./gradlew test\", \"acceptanceCriteria\": [\"Parses SMS from 6 banks\", \"Auto-categorizes by VPA\", \"Deduplicates by UPI ref\"]}\n```"
+    },
+    {
+      "id": 12,
+      "subject": "Task 12: UPI Notification Listener",
+      "status": "pending",
+      "blockedBy": [3, 11],
+      "description": "**Goal:** NotificationListenerService for GPay, PhonePe, Paytm notifications.\n\n```json:metadata\n{\"files\": [\"notification/UpiNotificationListener.kt\", \"notification/NotificationParser.kt\"], \"verifyCommand\": \"./gradlew test\", \"acceptanceCriteria\": [\"Intercepts UPI app notifications\", \"Parses amount and merchant\", \"Deduplicates with SMS\"]}\n```"
+    },
+    {
+      "id": 13,
+      "subject": "Task 13: Budget Tracking with Alerts",
+      "status": "pending",
+      "blockedBy": [3, 5],
+      "description": "**Goal:** Budget limits per category, push notifications at 80% and 100% thresholds.\n\n```json:metadata\n{\"files\": [\"domain/usecase/CheckBudgetAlertUseCase.kt\", \"notification/BudgetAlertManager.kt\"], \"verifyCommand\": \"./gradlew test\", \"acceptanceCriteria\": [\"Budget per category\", \"Push notification at 80% and 100%\"]}\n```"
+    },
+    {
+      "id": 14,
+      "subject": "Task 14: Export CSV and Backup/Restore",
+      "status": "pending",
+      "blockedBy": [3],
+      "description": "**Goal:** CSV export with share intent, database file backup/restore via SAF.\n\n```json:metadata\n{\"files\": [\"data/export/CsvExporter.kt\", \"data/backup/DatabaseBackupManager.kt\"], \"verifyCommand\": \"./gradlew test\", \"acceptanceCriteria\": [\"CSV export with correct headers\", \"Backup and restore database file\"]}\n```"
+    },
+    {
+      "id": 15,
+      "subject": "Task 15: Recurring Expenses, Widget, and Polish",
+      "status": "pending",
+      "blockedBy": [5, 6, 7, 8, 9, 10],
+      "description": "**Goal:** WorkManager for recurring expenses, Glance widget for quick entry, final integration testing.\n\n```json:metadata\n{\"files\": [\"widget/QuickExpenseWidget.kt\", \"worker/RecurringExpenseWorker.kt\"], \"verifyCommand\": \"./gradlew test && ./gradlew assembleDebug\", \"acceptanceCriteria\": [\"Recurring expenses auto-logged\", \"Home widget works\", \"No crashes on lifecycle events\"]}\n```"
+    }
+  ],
+  "lastUpdated": "2026-05-02T00:00:00Z"
+}
