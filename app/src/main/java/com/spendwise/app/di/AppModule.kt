@@ -10,6 +10,12 @@ import com.spendwise.app.ui.settings.SettingsViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
+/**
+ * Koin module for ViewModel definitions.
+ *
+ * Each ViewModel receives its dependencies via constructor injection.
+ * Dependencies are resolved from [databaseModule] and [domainModule].
+ */
 val appModule = module {
     viewModel { AddExpenseViewModel(get(), get()) }
     viewModel { OnboardingViewModel(get(), get(), get()) }
@@ -17,5 +23,5 @@ val appModule = module {
     viewModel { HomeViewModel(get(), get(), get(), get()) }
     viewModel { HistoryViewModel(get(), get(), get()) }
     viewModel { CategoriesViewModel(get(), get(), get()) }
-    viewModel { SettingsViewModel(get()) }
+    viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get()) }
 }

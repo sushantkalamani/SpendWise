@@ -1,5 +1,6 @@
 package com.spendwise.app.ui.home.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -11,9 +12,21 @@ import com.spendwise.app.domain.model.Expense
 import java.text.NumberFormat
 import java.util.Locale
 
+/**
+ * A single expense row used in both the Home and History screens.
+ *
+ * Displays the category icon, description/category name, date + payment
+ * method, and the amount in ₹. Tapping the item invokes [onClick] to
+ * open the expense detail sheet.
+ *
+ * @param expense The expense to display.
+ * @param onClick Called when the item is tapped. Opens the detail sheet.
+ * @param modifier Optional [Modifier].
+ */
 @Composable
 fun RecentExpenseItem(
     expense: Expense,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val currencyFormat = NumberFormat.getCurrencyInstance(Locale("en", "IN")).apply {
@@ -63,6 +76,6 @@ fun RecentExpenseItem(
                 color = MaterialTheme.colorScheme.error
             )
         },
-        modifier = modifier
+        modifier = modifier.clickable(onClick = onClick)
     )
 }

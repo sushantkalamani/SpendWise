@@ -9,6 +9,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.*
 
+/**
+ * Room-backed implementation of [ExpenseRepository].
+ *
+ * Handles mapping between domain [Expense] objects and [ExpenseEntity] rows,
+ * including category look-ups for the domain model's embedded [Category].
+ */
 class ExpenseRepositoryImpl(
     private val expenseDao: ExpenseDao,
     private val categoryDao: CategoryDao
@@ -67,6 +73,36 @@ class ExpenseRepositoryImpl(
     override fun getPaginated(limit: Int, offset: Int): Flow<List<Expense>> {
         return expenseDao.getPaginated(limit, offset).map { entities -> entities.map { it.toDomain() } }
     }
+
+    // --- v2 additions ---
+
+    override fun getAllExpenses(): Flow<List<Expense>> {
+        return expenseDao.getAll().map { entities -> entities.map { it.toDomain() } }
+    }
+
+    override suspend fun findDuplicate(
+        date: LocalDateTime,
+        amount: Double,
+        description: String,
+        categoryId: Long?
+    ): Expense? {
+        val dateMillis = date.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+        return expenseDao.findDuplicate(dateMillis, amount, description, categoryId)?.toDomain()
+    }
+
+    override suspend fun insertAll(expenses: List<Expense>): List<Long> {
+        return expenseDao.insertAll(expenses.map { it.toEntity() })
+    }
+
+    override suspend fun deleteAllExpenses() {
+        expenseDao.deleteAll()
+    }
+
+    override suspend fun getTotalCount(): Int {
+        return expenseDao.getTotalCount()
+    }
+
+    // ---- Entity ↔ Domain mappers ----
 
     private suspend fun ExpenseEntity.toDomain(): Expense {
         val category = categoryId?.let { categoryDao.getById(it) }

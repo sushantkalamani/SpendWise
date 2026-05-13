@@ -4,6 +4,12 @@ import androidx.room.*
 import com.spendwise.app.data.local.entity.ExpenseEntity
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * Room DAO for expense CRUD operations and queries.
+ *
+ * Provides reactive [Flow]-based reads for UI observation, suspend functions
+ * for one-shot writes, and bulk operations for import/export workflows.
+ */
 @Dao
 interface ExpenseDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -47,4 +53,37 @@ interface ExpenseDao {
 
     @Query("SELECT COUNT(*) FROM expenses WHERE date BETWEEN :startDate AND :endDate")
     suspend fun getCountForDateRange(startDate: Long, endDate: Long): Int
+
+    // --- New queries for v2 features ---
+
+    /** Returns all expenses ordered by date descending. Used for full CSV export. */
+    @Query("SELECT * FROM expenses ORDER BY date DESC")
+    fun getAll(): Flow<List<ExpenseEntity>>
+
+    /**
+     * Finds a potential duplicate during CSV import by matching on the four
+     * key fields: timestamp, amount, description, and category.
+     */
+    @Query(
+        "SELECT * FROM expenses WHERE date = :date AND amount = :amount " +
+        "AND description = :description AND categoryId = :categoryId LIMIT 1"
+    )
+    suspend fun findDuplicate(
+        date: Long,
+        amount: Double,
+        description: String,
+        categoryId: Long?
+    ): ExpenseEntity?
+
+    /** Bulk insert for CSV import. Ignores rows that conflict on primary key. */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(expenses: List<ExpenseEntity>): List<Long>
+
+    /** Deletes every expense row. Used by "Clear All Data" in Settings. */
+    @Query("DELETE FROM expenses")
+    suspend fun deleteAll()
+
+    /** Returns the total number of expenses. Used for empty-state checks. */
+    @Query("SELECT COUNT(*) FROM expenses")
+    suspend fun getTotalCount(): Int
 }
