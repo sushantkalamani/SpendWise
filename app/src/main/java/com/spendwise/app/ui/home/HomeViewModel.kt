@@ -11,6 +11,13 @@ import com.spendwise.app.domain.usecase.GetMonthlySummaryUseCase
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel for the Home screen.
+ *
+ * Manages the current month period, loads summary data, and handles
+ * expense deletion with undo support. Deleted expenses are held in
+ * [lastDeletedExpense] until the undo window expires or is dismissed.
+ */
 class HomeViewModel(
     private val monthPeriodUseCase: GetMonthPeriodUseCase,
     private val summaryUseCase: GetMonthlySummaryUseCase,
@@ -20,6 +27,10 @@ class HomeViewModel(
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    /** Holds the most recently deleted expense for undo support. */
+    private val _lastDeletedExpense = MutableStateFlow<Expense?>(null)
+    val lastDeletedExpense: StateFlow<Expense?> = _lastDeletedExpense.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -71,6 +82,34 @@ class HomeViewModel(
         }
     }
 
+    // ---- Delete with undo ----
+
+    /**
+     * Deletes [expense] and stores it for potential undo.
+     * The UI should observe [lastDeletedExpense] to show an undo snackbar.
+     */
+    fun deleteExpenseWithUndo(expense: Expense) {
+        viewModelScope.launch {
+            expenseRepository.deleteExpense(expense)
+            _lastDeletedExpense.value = expense
+        }
+    }
+
+    /** Re-inserts the last deleted expense (undo). */
+    fun undoDelete() {
+        val expense = _lastDeletedExpense.value ?: return
+        viewModelScope.launch {
+            expenseRepository.addExpense(expense)
+            _lastDeletedExpense.value = null
+        }
+    }
+
+    /** Clears the deleted expense reference after the undo window expires. */
+    fun clearDeletedExpense() {
+        _lastDeletedExpense.value = null
+    }
+
+    @Deprecated("Use deleteExpenseWithUndo instead", ReplaceWith("deleteExpenseWithUndo(expense)"))
     fun deleteExpense(expense: Expense) {
         viewModelScope.launch { expenseRepository.deleteExpense(expense) }
     }

@@ -10,7 +10,20 @@ import com.spendwise.app.domain.usecase.GetMonthlySummaryUseCase
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
+import java.text.NumberFormat
+import java.util.Locale
 
+/**
+ * ViewModel for the Analytics screen.
+ *
+ * Loads chart data (donut, trend) and computes spending insights:
+ * - Top spending category
+ * - Average daily spend (based on elapsed days, not total period)
+ * - Projected month-end spend (linear extrapolation)
+ * - Budget risk warning when projected > budget
+ *
+ * Weekly grouping uses ISO week numbers rather than naive 7-day chunking.
+ */
 class AnalyticsViewModel(
     private val monthPeriodUseCase: GetMonthPeriodUseCase,
     private val summaryUseCase: GetMonthlySummaryUseCase,
@@ -20,6 +33,10 @@ class AnalyticsViewModel(
 
     private val _uiState = MutableStateFlow(AnalyticsUiState())
     val uiState: StateFlow<AnalyticsUiState> = _uiState.asStateFlow()
+
+    private val currencyFormat = NumberFormat.getCurrencyInstance(Locale("en", "IN")).apply {
+        maximumFractionDigits = 0
+    }
 
     init {
         viewModelScope.launch {
@@ -45,6 +62,9 @@ class AnalyticsViewModel(
 
         viewModelScope.launch {
             expenseRepository.getExpensesByDateRange(period.startDate, period.endDate).collect { expenses ->
+                val hasExpenses = expenses.isNotEmpty()
+
+                // ---- Daily totals (fills zero-spend days) ----
                 val grouped = expenses.groupBy { it.date.date }
                 val dailyTotals = mutableListOf<DailyTotal>()
                 var current = period.startDate
@@ -56,7 +76,39 @@ class AnalyticsViewModel(
                     ))
                     current = current.plus(1, DateTimeUnit.DAY)
                 }
-                _uiState.update { it.copy(dailyTotals = dailyTotals) }
+
+                // ---- Compute insights ----
+                val totalSpent = expenses.sumOf { it.amount }
+                val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+                val elapsedDays = if (today >= period.startDate) {
+                    (minOf(today, period.endDate).toEpochDays() - period.startDate.toEpochDays() + 1).coerceAtLeast(1)
+                } else 1
+                val totalDays = (period.endDate.toEpochDays() - period.startDate.toEpochDays() + 1).coerceAtLeast(1)
+
+                val avgDaily = if (elapsedDays > 0) totalSpent / elapsedDays else 0.0
+                val projected = avgDaily * totalDays
+
+                // Top category
+                val categoryBreakdown = _uiState.value.categoryBreakdown
+                val topCategory = categoryBreakdown.maxByOrNull { it.amount }
+
+                // Budget risk warning
+                val budgetLimit = _uiState.value.summary?.totalBudget
+                val budgetWarning = if (budgetLimit != null && budgetLimit > 0 && projected > budgetLimit) {
+                    val excess = projected - budgetLimit
+                    "At current pace, you may exceed budget by ${currencyFormat.format(excess)}"
+                } else null
+
+                _uiState.update {
+                    it.copy(
+                        dailyTotals = dailyTotals,
+                        hasExpenses = hasExpenses,
+                        topSpendingCategory = topCategory,
+                        averageDailySpend = avgDaily,
+                        projectedMonthEnd = projected,
+                        budgetRiskWarning = budgetWarning
+                    )
+                }
             }
         }
     }

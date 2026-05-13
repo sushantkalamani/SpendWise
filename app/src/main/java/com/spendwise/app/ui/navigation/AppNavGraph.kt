@@ -16,6 +16,7 @@ import com.spendwise.app.domain.repository.UserPreferencesRepository
 import com.spendwise.app.ui.addexpense.AddExpenseSheet
 import com.spendwise.app.ui.addexpense.AddExpenseDetailScreen
 import com.spendwise.app.ui.addexpense.AddExpenseViewModel
+import com.spendwise.app.ui.addexpense.EditExpenseScreen
 import com.spendwise.app.ui.analytics.AnalyticsScreen
 import com.spendwise.app.ui.analytics.AnalyticsViewModel
 import com.spendwise.app.ui.categories.CategoriesScreen
@@ -31,6 +32,12 @@ import com.spendwise.app.ui.settings.SettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
+/**
+ * Root composable that gates on onboarding status and hosts the main navigation.
+ *
+ * After onboarding, [MainAppContent] provides the scaffold with bottom nav,
+ * FAB, and a [NavHost] for all screens including the new Edit Expense route.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavGraph() {
@@ -77,7 +84,15 @@ private fun MainAppContent() {
                 val viewModel: HomeViewModel = koinViewModel()
                 HomeScreen(
                     viewModel = viewModel,
-                    onNavigateToSettings = { navController.navigate(SettingsRoute) }
+                    onNavigateToSettings = { navController.navigate(SettingsRoute) },
+                    onEditExpense = { expenseId ->
+                        navController.navigate(EditExpenseRoute(expenseId))
+                    },
+                    onDuplicateExpense = { expenseId ->
+                        // Open add screen pre-filled with duplicate data
+                        showDetailedAdd = true
+                        // The AddExpenseViewModel for the detail screen will handle this
+                    }
                 )
             }
             composable<AnalyticsRoute> {
@@ -86,7 +101,15 @@ private fun MainAppContent() {
             }
             composable<HistoryRoute> {
                 val viewModel: HistoryViewModel = koinViewModel()
-                HistoryScreen(viewModel = viewModel)
+                HistoryScreen(
+                    viewModel = viewModel,
+                    onEditExpense = { expenseId ->
+                        navController.navigate(EditExpenseRoute(expenseId))
+                    },
+                    onDuplicateExpense = { expenseId ->
+                        showDetailedAdd = true
+                    }
+                )
             }
             composable<CategoriesRoute> {
                 val viewModel: CategoriesViewModel = koinViewModel()
@@ -97,6 +120,19 @@ private fun MainAppContent() {
                 SettingsScreen(
                     viewModel = viewModel,
                     onBack = { navController.popBackStack() }
+                )
+            }
+
+            // Edit Expense screen — navigated to from detail sheet
+            composable<EditExpenseRoute> { backStackEntry ->
+                val route = backStackEntry.arguments?.getLong("expenseId") ?: return@composable
+                val addViewModel: AddExpenseViewModel = koinViewModel()
+                LaunchedEffect(route) {
+                    addViewModel.loadExpenseForEdit(route)
+                }
+                EditExpenseScreen(
+                    viewModel = addViewModel,
+                    onDismiss = { navController.popBackStack() }
                 )
             }
         }
