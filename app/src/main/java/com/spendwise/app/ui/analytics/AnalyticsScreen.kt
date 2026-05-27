@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.spendwise.app.ui.analytics.components.BudgetVsActualList
-import com.spendwise.app.ui.analytics.components.CategoryBreakdownList
 import com.spendwise.app.ui.analytics.components.CategoryDonutChart
 import com.spendwise.app.ui.analytics.components.RenameTagDialog
 import com.spendwise.app.ui.analytics.components.SpendingTrendChart
@@ -160,40 +159,21 @@ fun AnalyticsScreen(
                 }
             }
 
-            // Donut chart
+            // Donut chart — clickable with tag breakdown
             ElevatedCard(modifier = Modifier.fillMaxWidth()) {
                 CategoryDonutChart(
                     breakdown = uiState.categoryBreakdown,
                     totalAmount = uiState.summary?.totalSpent ?: 0.0,
+                    tagBreakdowns = uiState.tagBreakdowns,
+                    expandedCategoryId = uiState.expandedCategoryId,
+                    onCategoryClick = viewModel::toggleExpandedCategory,
+                    onTagSearch = { tag -> onNavigateToHistory(tag) },
+                    onTagRename = { catId, oldTag ->
+                        renameDialogCategoryId = catId
+                        renameDialogTag = oldTag
+                    },
                     modifier = Modifier.padding(16.dp)
                 )
-            }
-
-            // ---- Category Breakdown with Tag Drill-Down ----
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        "Category Breakdown",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        "Tap a category to see tag-wise details",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    CategoryBreakdownList(
-                        breakdown = uiState.categoryBreakdown,
-                        tagBreakdowns = uiState.tagBreakdowns,
-                        expandedCategoryId = uiState.expandedCategoryId,
-                        onCategoryClick = viewModel::toggleExpandedCategory,
-                        onTagSearch = { tag -> onNavigateToHistory(tag) },
-                        onTagRename = { catId, oldTag ->
-                            renameDialogCategoryId = catId
-                            renameDialogTag = oldTag
-                        }
-                    )
-                }
             }
 
             // Spending trend
