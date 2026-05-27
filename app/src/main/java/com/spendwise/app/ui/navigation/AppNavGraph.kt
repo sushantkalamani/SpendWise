@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.spendwise.app.domain.repository.UserPreferencesRepository
 import com.spendwise.app.ui.addexpense.AddExpenseSheet
 import com.spendwise.app.ui.addexpense.AddExpenseDetailScreen
@@ -97,12 +98,19 @@ private fun MainAppContent() {
             }
             composable<AnalyticsRoute> {
                 val viewModel: AnalyticsViewModel = koinViewModel()
-                AnalyticsScreen(viewModel = viewModel)
+                AnalyticsScreen(
+                    viewModel = viewModel,
+                    onNavigateToHistory = { searchQuery ->
+                        navController.navigate(HistoryRoute(searchQuery = searchQuery))
+                    }
+                )
             }
-            composable<HistoryRoute> {
+            composable<HistoryRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<HistoryRoute>()
                 val viewModel: HistoryViewModel = koinViewModel()
                 HistoryScreen(
                     viewModel = viewModel,
+                    initialSearchQuery = route.searchQuery,
                     onEditExpense = { expenseId ->
                         navController.navigate(EditExpenseRoute(expenseId))
                     },

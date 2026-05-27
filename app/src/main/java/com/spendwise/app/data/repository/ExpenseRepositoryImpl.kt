@@ -102,6 +102,21 @@ class ExpenseRepositoryImpl(
         return expenseDao.getTotalCount()
     }
 
+    override suspend fun renameTagForCategory(categoryId: Long, oldTag: String, newTag: String) {
+        val entities = expenseDao.getByCategoryDirect(categoryId)
+        val trimmedNew = newTag.trim()
+        entities.forEach { entity ->
+            val tags = if (entity.tags.isBlank()) emptyList() else entity.tags.split(",")
+            val hasOld = tags.any { it.trim().equals(oldTag.trim(), ignoreCase = true) }
+            if (hasOld) {
+                val updated = tags.map { tag ->
+                    if (tag.trim().equals(oldTag.trim(), ignoreCase = true)) trimmedNew else tag
+                }.filter { it.isNotBlank() }.distinct()
+                expenseDao.update(entity.copy(tags = updated.joinToString(",")))
+            }
+        }
+    }
+
     // ---- Entity ↔ Domain mappers ----
 
     private suspend fun ExpenseEntity.toDomain(): Expense {

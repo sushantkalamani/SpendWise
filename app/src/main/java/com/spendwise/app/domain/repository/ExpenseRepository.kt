@@ -41,4 +41,7 @@ interface ExpenseRepository {
 
     /** Returns total expense count. Used for empty-state checks. */
     suspend fun getTotalCount(): Int
+
+    /** Renames (or merges) a tag across all expenses in a given category. */
+    suspend fun renameTagForCategory(categoryId: Long, oldTag: String, newTag: String)
 }
