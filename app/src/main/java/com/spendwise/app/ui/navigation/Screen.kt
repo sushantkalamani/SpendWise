@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable object OnboardingRoute
 @Serializable object HomeRoute
 @Serializable object AnalyticsRoute
-@Serializable object HistoryRoute
+@Serializable data class HistoryRoute(val searchQuery: String? = null)
 @Serializable object CategoriesRoute
 @Serializable object SettingsRoute
 @Serializable object AddExpenseRoute

@@ -37,6 +37,7 @@ import java.util.Locale
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel,
+    initialSearchQuery: String? = null,
     onEditExpense: (Long) -> Unit = {},
     onDuplicateExpense: (Long) -> Unit = {},
     modifier: Modifier = Modifier
@@ -49,6 +50,14 @@ fun HistoryScreen(
     var showSortMenu by remember { mutableStateOf(false) }
 
     val currencyFormat = NumberFormat.getCurrencyInstance(Locale("en", "IN")).apply { maximumFractionDigits = 0 }
+
+    // Pre-populate search from Analytics → tag navigation
+    LaunchedEffect(initialSearchQuery) {
+        if (initialSearchQuery != null) {
+            viewModel.updateSearchQuery(initialSearchQuery)
+            viewModel.toggleSearchActive(true)
+        }
+    }
 
     // Group by date
     val grouped = filteredExpenses.groupBy {

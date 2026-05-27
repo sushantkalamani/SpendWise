@@ -15,7 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.spendwise.app.ui.analytics.components.BudgetVsActualList
+import com.spendwise.app.ui.analytics.components.CategoryBreakdownList
 import com.spendwise.app.ui.analytics.components.CategoryDonutChart
+import com.spendwise.app.ui.analytics.components.RenameTagDialog
 import com.spendwise.app.ui.analytics.components.SpendingTrendChart
 import java.text.NumberFormat
 import java.util.Locale
@@ -31,12 +33,17 @@ import java.util.Locale
 @Composable
 fun AnalyticsScreen(
     viewModel: AnalyticsViewModel,
+    onNavigateToHistory: (searchQuery: String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val currencyFormat = NumberFormat.getCurrencyInstance(Locale("en", "IN")).apply {
         maximumFractionDigits = 0
     }
+
+    // Rename dialog state
+    var renameDialogCategoryId by remember { mutableStateOf<Long?>(null) }
+    var renameDialogTag by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = modifier
@@ -162,6 +169,33 @@ fun AnalyticsScreen(
                 )
             }
 
+            // ---- Category Breakdown with Tag Drill-Down ----
+            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        "Category Breakdown",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        "Tap a category to see tag-wise details",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    CategoryBreakdownList(
+                        breakdown = uiState.categoryBreakdown,
+                        tagBreakdowns = uiState.tagBreakdowns,
+                        expandedCategoryId = uiState.expandedCategoryId,
+                        onCategoryClick = viewModel::toggleExpandedCategory,
+                        onTagSearch = { tag -> onNavigateToHistory(tag) },
+                        onTagRename = { catId, oldTag ->
+                            renameDialogCategoryId = catId
+                            renameDialogTag = oldTag
+                        }
+                    )
+                }
+            }
+
             // Spending trend
             ElevatedCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -205,5 +239,21 @@ fun AnalyticsScreen(
         }
 
         Spacer(Modifier.height(80.dp)) // space for bottom nav
+    }
+
+    // ---- Rename Tag Dialog ----
+    if (renameDialogCategoryId != null && renameDialogTag != null) {
+        RenameTagDialog(
+            currentTag = renameDialogTag!!,
+            onDismiss = {
+                renameDialogCategoryId = null
+                renameDialogTag = null
+            },
+            onConfirm = { newTag ->
+                viewModel.renameTag(renameDialogCategoryId!!, renameDialogTag!!, newTag)
+                renameDialogCategoryId = null
+                renameDialogTag = null
+            }
+        )
     }
 }

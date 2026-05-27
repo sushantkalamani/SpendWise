@@ -86,4 +86,8 @@ interface ExpenseDao {
     /** Returns the total number of expenses. Used for empty-state checks. */
     @Query("SELECT COUNT(*) FROM expenses")
     suspend fun getTotalCount(): Int
+
+    /** Returns all expenses for a given category (no date filter). Used for tag renaming. */
+    @Query("SELECT * FROM expenses WHERE categoryId = :categoryId")
+    suspend fun getByCategoryDirect(categoryId: Long): List<ExpenseEntity>
 }

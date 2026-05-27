@@ -24,7 +24,11 @@ data class AnalyticsUiState(
     val averageDailySpend: Double = 0.0,
     val projectedMonthEnd: Double = 0.0,
     val budgetRiskWarning: String? = null,
-    val hasExpenses: Boolean = false
+    val hasExpenses: Boolean = false,
+
+    // Tag-wise breakdown per category (key = category ID)
+    val tagBreakdowns: Map<Long, List<TagSpend>> = emptyMap(),
+    val expandedCategoryId: Long? = null
 )
 
 /**
@@ -36,6 +40,19 @@ data class AnalyticsUiState(
 data class DailyTotal(
     val label: String,
     val amount: Double
+)
+
+/**
+ * Represents a tag's spend within a parent category.
+ *
+ * @property tag Display name of the tag (e.g. "CAB", "Auto", "Untagged").
+ * @property amount Total amount spent on this tag.
+ * @property percentage Percentage relative to the parent category's total spend.
+ */
+data class TagSpend(
+    val tag: String,
+    val amount: Double,
+    val percentage: Double
 )
 
 /** Toggle between daily and weekly chart grouping. */

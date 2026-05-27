@@ -99,6 +99,38 @@ class AnalyticsViewModel(
                     "At current pace, you may exceed budget by ${currencyFormat.format(excess)}"
                 } else null
 
+                // ---- Tag-wise breakdown per category ----
+                val tagBreakdowns = mutableMapOf<Long, List<TagSpend>>()
+                val byCat = expenses.groupBy { it.category?.id }
+                byCat.forEach { (catId, catExpenses) ->
+                    if (catId == null) return@forEach
+                    val catTotal = catExpenses.sumOf { it.amount }
+                    if (catTotal <= 0) return@forEach
+
+                    // Accumulate amounts per normalized tag
+                    val tagAmounts = mutableMapOf<String, Double>()
+                    catExpenses.forEach { exp ->
+                        if (exp.tags.isEmpty()) {
+                            tagAmounts["Untagged"] = (tagAmounts["Untagged"] ?: 0.0) + exp.amount
+                        } else {
+                            exp.tags.forEach { rawTag ->
+                                val normalized = rawTag.trim().uppercase()
+                                tagAmounts[normalized] = (tagAmounts[normalized] ?: 0.0) + exp.amount
+                            }
+                        }
+                    }
+
+                    tagBreakdowns[catId] = tagAmounts.entries
+                        .map { (tag, amount) ->
+                            TagSpend(
+                                tag = tag,
+                                amount = amount,
+                                percentage = (amount / catTotal) * 100
+                            )
+                        }
+                        .sortedByDescending { it.amount }
+                }
+
                 _uiState.update {
                     it.copy(
                         dailyTotals = dailyTotals,
@@ -106,7 +138,8 @@ class AnalyticsViewModel(
                         topSpendingCategory = topCategory,
                         averageDailySpend = avgDaily,
                         projectedMonthEnd = projected,
-                        budgetRiskWarning = budgetWarning
+                        budgetRiskWarning = budgetWarning,
+                        tagBreakdowns = tagBreakdowns
                     )
                 }
             }
@@ -132,6 +165,24 @@ class AnalyticsViewModel(
     fun toggleViewMode() {
         _uiState.update {
             it.copy(viewMode = if (it.viewMode == ChartViewMode.DAILY) ChartViewMode.WEEKLY else ChartViewMode.DAILY)
+        }
+    }
+
+    /** Toggles the expanded/collapsed state of a category in the breakdown list. */
+    fun toggleExpandedCategory(categoryId: Long) {
+        _uiState.update {
+            it.copy(
+                expandedCategoryId = if (it.expandedCategoryId == categoryId) null else categoryId
+            )
+        }
+    }
+
+    /** Renames a tag across all expenses in a category, then reloads the current period. */
+    fun renameTag(categoryId: Long, oldTag: String, newTag: String) {
+        viewModelScope.launch {
+            expenseRepository.renameTagForCategory(categoryId, oldTag, newTag)
+            // Reload to reflect changes
+            _uiState.value.currentPeriod?.let { loadPeriod(it) }
         }
     }
 }
