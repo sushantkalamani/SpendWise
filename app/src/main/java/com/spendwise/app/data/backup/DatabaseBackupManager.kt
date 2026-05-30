@@ -1,8 +1,12 @@
 package com.spendwise.app.data.backup
 
 import android.content.Context
+import android.content.Intent
+import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import com.spendwise.app.data.local.AppDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -25,8 +29,8 @@ class DatabaseBackupManager(
      *
      * @return `true` on success, `false` on I/O failure.
      */
-    fun backupTo(uri: Uri): Boolean {
-        return try {
+    suspend fun backupTo(uri: Uri): Boolean = withContext(Dispatchers.IO) {
+        try {
             // Checkpoint WAL to ensure all data is in the main db file
             database.openHelper.writableDatabase.execSQL("PRAGMA wal_checkpoint(FULL)")
             context.contentResolver.openOutputStream(uri)?.use { output ->
@@ -48,19 +52,50 @@ class DatabaseBackupManager(
      *
      * @return `true` on success, `false` on I/O failure.
      */
-    fun restoreFrom(uri: Uri): Boolean {
-        return try {
-            // Close the database before overwriting
-            database.close()
-            context.contentResolver.openInputStream(uri)?.use { input ->
-                FileOutputStream(dbFile).use { output ->
-                    input.copyTo(output)
+    suspend fun restoreFrom(uri: Uri): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val tmp = File(dbFile.parent, "restore_tmp.db")
+            context.contentResolver.openInputStream(uri)?.use { it.copyTo(FileOutputStream(tmp)) }
+                ?: return@withContext false
+            
+            SQLiteDatabase.openDatabase(tmp.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
+                val ok = db.rawQuery("PRAGMA integrity_check", null).use { c ->
+                    c.moveToFirst() && c.getString(0) == "ok"
+                }
+                if (!ok) {
+                    tmp.delete()
+                    return@withContext false
                 }
             }
+
+            database.close()
+
+            val parent = dbFile.parentFile
+            if (parent != null) {
+                File(parent, "spendwise.db-wal").delete()
+                File(parent, "spendwise.db-shm").delete()
+            }
+
+            tmp.copyTo(dbFile, overwrite = true)
+            tmp.delete()
             true
         } catch (_: Exception) {
             false
         }
+    }
+
+    /**
+     * Programmatically restarts the app by relaunching the launcher activity
+     * and killing the current process.
+     */
+    fun restartApp() {
+        val pm = context.packageManager
+        val intent = pm.getLaunchIntentForPackage(context.packageName)
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            context.startActivity(intent)
+        }
+        Runtime.getRuntime().exit(0)
     }
 
     /**

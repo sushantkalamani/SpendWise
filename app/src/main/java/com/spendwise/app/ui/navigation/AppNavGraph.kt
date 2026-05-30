@@ -71,7 +71,7 @@ private fun MainAppContent() {
     Scaffold(
         bottomBar = { BottomNavBar(navController) },
         floatingActionButton = {
-            LargeFloatingActionButton(onClick = { showAddExpenseSheet = true }) {
+            FloatingActionButton(onClick = { showAddExpenseSheet = true }) {
                 Icon(Icons.Filled.Add, contentDescription = "Add expense")
             }
         }

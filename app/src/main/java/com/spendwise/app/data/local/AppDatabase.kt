@@ -13,6 +13,8 @@ import com.spendwise.app.data.local.entity.BudgetEntity
 import com.spendwise.app.data.local.entity.CategoryEntity
 import com.spendwise.app.data.local.entity.ExpenseEntity
 
+import androidx.room.migration.Migration
+
 @Database(
     entities = [ExpenseEntity::class, CategoryEntity::class, BudgetEntity::class],
     version = 1,
@@ -25,12 +27,15 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun budgetDao(): BudgetDao
 
     companion object {
+        private val MIGRATIONS = arrayOf<Migration>()
+
         fun create(context: Context): AppDatabase {
             return Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
                 "spendwise.db"
             )
+                .addMigrations(*MIGRATIONS)
                 .addCallback(DefaultCategoryCallback())
                 .build()
         }

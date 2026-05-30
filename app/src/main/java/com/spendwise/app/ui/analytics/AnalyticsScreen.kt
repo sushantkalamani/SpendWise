@@ -8,6 +8,8 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -185,23 +187,54 @@ fun AnalyticsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("Spending Trend", style = MaterialTheme.typography.titleMedium)
-                        SingleChoiceSegmentedButtonRow {
-                            SegmentedButton(
-                                selected = uiState.viewMode == ChartViewMode.DAILY,
-                                onClick = { if (uiState.viewMode != ChartViewMode.DAILY) viewModel.toggleViewMode() },
-                                shape = SegmentedButtonDefaults.itemShape(0, 2)
-                            ) { Text("Daily") }
-                            SegmentedButton(
-                                selected = uiState.viewMode == ChartViewMode.WEEKLY,
-                                onClick = { if (uiState.viewMode != ChartViewMode.WEEKLY) viewModel.toggleViewMode() },
-                                shape = SegmentedButtonDefaults.itemShape(1, 2)
-                            ) { Text("Weekly") }
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            SingleChoiceSegmentedButtonRow {
+                                SegmentedButton(
+                                    selected = uiState.chartType == ChartType.BAR,
+                                    onClick = { if (uiState.chartType != ChartType.BAR) viewModel.toggleChartType() },
+                                    shape = SegmentedButtonDefaults.itemShape(0, 2)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.BarChart,
+                                        contentDescription = "Bar Chart",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                SegmentedButton(
+                                    selected = uiState.chartType == ChartType.LINE,
+                                    onClick = { if (uiState.chartType != ChartType.LINE) viewModel.toggleChartType() },
+                                    shape = SegmentedButtonDefaults.itemShape(1, 2)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ShowChart,
+                                        contentDescription = "Line Chart",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+
+                            SingleChoiceSegmentedButtonRow {
+                                SegmentedButton(
+                                    selected = uiState.viewMode == ChartViewMode.DAILY,
+                                    onClick = { if (uiState.viewMode != ChartViewMode.DAILY) viewModel.toggleViewMode() },
+                                    shape = SegmentedButtonDefaults.itemShape(0, 2)
+                                ) { Text("Daily") }
+                                SegmentedButton(
+                                    selected = uiState.viewMode == ChartViewMode.WEEKLY,
+                                    onClick = { if (uiState.viewMode != ChartViewMode.WEEKLY) viewModel.toggleViewMode() },
+                                    shape = SegmentedButtonDefaults.itemShape(1, 2)
+                                ) { Text("Weekly") }
+                            }
                         }
                     }
                     Spacer(Modifier.height(12.dp))
                     SpendingTrendChart(
                         dailyTotals = uiState.dailyTotals,
-                        viewMode = uiState.viewMode
+                        viewMode = uiState.viewMode,
+                        chartType = uiState.chartType
                     )
                 }
             }

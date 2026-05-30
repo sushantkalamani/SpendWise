@@ -19,27 +19,36 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.style.TextAlign
+import com.spendwise.app.ui.analytics.ChartType
 import com.spendwise.app.ui.analytics.ChartViewMode
 import com.spendwise.app.ui.analytics.DailyTotal
 import java.text.NumberFormat
 import java.util.Locale
 
 /**
- * Improved bar chart for spending trends.
+ * Improved bar and line chart for spending trends.
  *
- * Key improvements over v1:
+ * Key improvements:
  * - Y-axis scale with amount labels (4 horizontal grid lines)
  * - Rounded bars using [drawRoundRect]
- * - Tap/long-press shows exact value tooltip above the bar
+ * - Tap/long-press shows exact value tooltip above the bar/point
  * - Zero-spend days show dotted baseline
- * - Horizontal scroll when many days exist
+ * - Horizontal scroll when many days exist (synchronized with X-axis)
  * - Weekly mode groups by ISO calendar week
  * - Theme-aware primary/secondary colors
+ * - Supports both BAR and LINE chart representations
  */
 @Composable
 fun SpendingTrendChart(
     dailyTotals: List<DailyTotal>,
     viewMode: ChartViewMode,
+    chartType: ChartType = ChartType.BAR,
     modifier: Modifier = Modifier
 ) {
     val data = when (viewMode) {
@@ -61,6 +70,7 @@ fun SpendingTrendChart(
     val gridColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
     val tooltipColor = MaterialTheme.colorScheme.inverseSurface
+    val surfaceColor = MaterialTheme.colorScheme.surface
 
     val currencyFormat = NumberFormat.getCurrencyInstance(Locale("en", "IN")).apply {
         maximumFractionDigits = 0
@@ -68,10 +78,16 @@ fun SpendingTrendChart(
 
     var selectedIndex by remember { mutableIntStateOf(-1) }
 
+    LaunchedEffect(viewMode, chartType) {
+        selectedIndex = -1
+    }
+
     // Dynamic width: wider when many items, scrollable
     val minBarWidth = if (viewMode == ChartViewMode.WEEKLY) 48.dp else 28.dp
     val chartWidth = (data.size * minBarWidth.value * 1.3f).dp.coerceAtLeast(300.dp)
     val yAxisWidth = 48.dp
+
+    val scrollState = rememberScrollState()
 
     Column(modifier = modifier) {
         // Tooltip
@@ -113,7 +129,7 @@ fun SpendingTrendChart(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .horizontalScroll(rememberScrollState())
+                    .horizontalScroll(scrollState)
             ) {
                 Canvas(
                     modifier = Modifier
@@ -145,49 +161,129 @@ fun SpendingTrendChart(
                         )
                     }
 
-                    // Draw bars
+                    // Draw content
                     val barTotalWidth = size.width / data.size
-                    val barWidth = barTotalWidth * 0.65f
-                    val gap = barTotalWidth * 0.35f / 2
 
-                    data.forEachIndexed { index, total ->
-                        val barHeight = if (maxAmount > 0) {
-                            (total.amount / maxAmount * size.height).toFloat()
-                        } else 0f
-                        val x = index * barTotalWidth + gap
+                    if (chartType == ChartType.BAR) {
+                        // Draw bars
+                        val barWidth = barTotalWidth * 0.65f
+                        val gap = barTotalWidth * 0.35f / 2
 
-                        if (total.amount > 0) {
-                            // Rounded bar
-                            drawRoundRect(
-                                color = if (index == selectedIndex) barColor.copy(alpha = 0.8f) else barColor,
-                                topLeft = Offset(x, size.height - barHeight),
-                                size = Size(barWidth, barHeight),
-                                cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
+                        data.forEachIndexed { index, total ->
+                            val barHeight = if (maxAmount > 0) {
+                                (total.amount / maxAmount * size.height).toFloat()
+                            } else 0f
+                            val x = index * barTotalWidth + gap
+
+                            if (total.amount > 0) {
+                                // Rounded bar
+                                drawRoundRect(
+                                    color = if (index == selectedIndex) barColor.copy(alpha = 0.8f) else barColor,
+                                    topLeft = Offset(x, size.height - barHeight),
+                                    size = Size(barWidth, barHeight),
+                                    cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
+                                )
+                            } else {
+                                // Zero-spend: dotted baseline indicator
+                                drawLine(
+                                    color = barColorZero,
+                                    start = Offset(x, size.height - 2f),
+                                    end = Offset(x + barWidth, size.height - 2f),
+                                    pathEffect = dashEffect,
+                                    strokeWidth = 2f
+                                )
+                            }
+                        }
+                    } else {
+                        // Draw line chart
+                        val points = data.mapIndexed { index, total ->
+                            val barHeight = if (maxAmount > 0) {
+                                (total.amount / maxAmount * size.height).toFloat()
+                            } else 0f
+                            val x = index * barTotalWidth + barTotalWidth / 2f
+                            val y = size.height - barHeight
+                            Offset(x, y)
+                        }
+
+                        if (points.isNotEmpty()) {
+                            // 1. Draw gradient filled area under the line
+                            val fillPath = androidx.compose.ui.graphics.Path().apply {
+                                moveTo(points.first().x, size.height)
+                                points.forEach { point ->
+                                    lineTo(point.x, point.y)
+                                }
+                                lineTo(points.last().x, size.height)
+                                close()
+                            }
+                            val startY = points.minOf { it.y }
+                            val endY = size.height
+                            if (startY < endY) {
+                                drawPath(
+                                    path = fillPath,
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            barColor.copy(alpha = 0.35f),
+                                            Color.Transparent
+                                        ),
+                                        startY = startY,
+                                        endY = endY
+                                    )
+                                )
+                            }
+
+                            // 2. Draw line path
+                            val strokePath = androidx.compose.ui.graphics.Path().apply {
+                                moveTo(points.first().x, points.first().y)
+                                for (i in 1 until points.size) {
+                                    lineTo(points[i].x, points[i].y)
+                                }
+                            }
+                            drawPath(
+                                path = strokePath,
+                                color = barColor,
+                                style = Stroke(
+                                    width = 3.dp.toPx(),
+                                    cap = StrokeCap.Round,
+                                    join = StrokeJoin.Round
+                                )
                             )
-                        } else {
-                            // Zero-spend: dotted baseline indicator
-                            drawLine(
-                                color = barColorZero,
-                                start = Offset(x, size.height - 2f),
-                                end = Offset(x + barWidth, size.height - 2f),
-                                pathEffect = dashEffect,
-                                strokeWidth = 2f
-                            )
+
+                            // 3. Draw marker dots
+                            points.forEachIndexed { index, point ->
+                                val isSelected = index == selectedIndex
+                                if (isSelected) {
+                                    drawCircle(
+                                        color = barColor.copy(alpha = 0.2f),
+                                        radius = 10.dp.toPx(),
+                                        center = point
+                                    )
+                                }
+                                drawCircle(
+                                    color = surfaceColor,
+                                    radius = 5.dp.toPx(),
+                                    center = point
+                                )
+                                drawCircle(
+                                    color = if (isSelected) barColor else barColor.copy(alpha = 0.8f),
+                                    radius = 3.5.dp.toPx(),
+                                    center = point
+                                )
+                            }
                         }
                     }
                 }
             }
         }
 
-        // X-axis labels (scrollable, show all)
+        // X-axis labels (scrollable, synchronized, perfectly aligned)
+        val barSlotWidth = if (data.isNotEmpty()) chartWidth / data.size else 0.dp
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = yAxisWidth)
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.SpaceEvenly
+                .horizontalScroll(scrollState),
+            horizontalArrangement = Arrangement.Start
         ) {
-            // Show labels adaptively: if too many, show every Nth
             val labelStep = when {
                 data.size <= 10 -> 1
                 data.size <= 20 -> 2
@@ -199,8 +295,11 @@ fun SpendingTrendChart(
                         item.label,
                         style = MaterialTheme.typography.labelSmall,
                         color = labelColor,
-                        modifier = Modifier.width(minBarWidth)
+                        modifier = Modifier.width(barSlotWidth),
+                        textAlign = TextAlign.Center
                     )
+                } else {
+                    Spacer(Modifier.width(barSlotWidth))
                 }
             }
         }

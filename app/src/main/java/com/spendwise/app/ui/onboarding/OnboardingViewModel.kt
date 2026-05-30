@@ -58,12 +58,20 @@ class OnboardingViewModel(
         viewModelScope.launch {
             val state = _uiState.value
             prefsRepository.setUserName(state.userName)
-            state.monthlyIncome.toDoubleOrNull()?.let { prefsRepository.setMonthlyIncome(it) }
+            
+            val income = state.monthlyIncome.toDoubleOrNull()?.coerceIn(0.0, 1_000_000_000.0)
+            if (income != null) {
+                prefsRepository.setMonthlyIncome(income)
+            }
+            
             prefsRepository.setSalaryDay(state.salaryDay)
             prefsRepository.setCalendarMode(state.isCalendarMode)
-            state.overallBudget.toDoubleOrNull()?.let { budget ->
+            
+            val budget = state.overallBudget.toDoubleOrNull()?.coerceIn(0.0, 1_000_000_000.0)
+            if (budget != null) {
                 budgetRepository.setBudget(Budget(categoryId = 0, monthlyLimit = budget, isOverallBudget = true))
             }
+            
             prefsRepository.setOnboardingComplete(true)
             _uiState.update { it.copy(isComplete = true) }
         }
