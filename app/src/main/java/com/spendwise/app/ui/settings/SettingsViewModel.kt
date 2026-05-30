@@ -58,7 +58,10 @@ class SettingsViewModel(
     fun setReminderEnabled(enabled: Boolean) { viewModelScope.launch { prefsRepository.setReminderEnabled(enabled) } }
     fun setReminderTime(hour: Int, minute: Int) { viewModelScope.launch { prefsRepository.setReminderTime(hour, minute) } }
     fun setMonthlyIncome(income: String) {
-        viewModelScope.launch { prefsRepository.setMonthlyIncome(income.toDoubleOrNull()) }
+        viewModelScope.launch {
+            val incomeVal = income.toDoubleOrNull()?.coerceIn(0.0, 1_000_000_000.0)
+            prefsRepository.setMonthlyIncome(incomeVal)
+        }
     }
 
     // ---- Export CSV ----
@@ -241,11 +244,11 @@ class SettingsViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(restoreStatus = OperationStatus.Loading, showRestoreConfirmDialog = false) }
             val success = backupManager.restoreFrom(uri)
-            _uiState.update {
-                it.copy(
-                    restoreStatus = if (success) OperationStatus.Success("Restore complete — restart app for changes to take effect")
-                    else OperationStatus.Error("Restore failed")
-                )
+            if (success) {
+                _uiState.update { it.copy(restoreStatus = OperationStatus.Success("Restore complete — restarting...")) }
+                backupManager.restartApp()
+            } else {
+                _uiState.update { it.copy(restoreStatus = OperationStatus.Error("Restore failed")) }
             }
         }
     }

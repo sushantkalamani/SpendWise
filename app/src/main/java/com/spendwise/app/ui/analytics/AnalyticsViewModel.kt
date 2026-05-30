@@ -185,8 +185,12 @@ class AnalyticsViewModel(
 
     /** Renames a tag across all expenses in a category, then reloads the current period. */
     fun renameTag(categoryId: Long, oldTag: String, newTag: String) {
+        val trimmedNew = newTag.trim()
+        if (trimmedNew.isBlank() || trimmedNew.equals(oldTag.trim(), ignoreCase = true)) {
+            return
+        }
         viewModelScope.launch {
-            expenseRepository.renameTagForCategory(categoryId, oldTag, newTag)
+            expenseRepository.renameTagForCategory(categoryId, oldTag, trimmedNew)
             // Reload to reflect changes
             _uiState.value.currentPeriod?.let { loadPeriod(it) }
         }

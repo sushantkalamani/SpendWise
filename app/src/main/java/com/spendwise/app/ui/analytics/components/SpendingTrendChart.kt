@@ -78,6 +78,10 @@ fun SpendingTrendChart(
 
     var selectedIndex by remember { mutableIntStateOf(-1) }
 
+    LaunchedEffect(viewMode, chartType) {
+        selectedIndex = -1
+    }
+
     // Dynamic width: wider when many items, scrollable
     val minBarWidth = if (viewMode == ChartViewMode.WEEKLY) 48.dp else 28.dp
     val chartWidth = (data.size * minBarWidth.value * 1.3f).dp.coerceAtLeast(300.dp)
@@ -211,17 +215,21 @@ fun SpendingTrendChart(
                                 lineTo(points.last().x, size.height)
                                 close()
                             }
-                            drawPath(
-                                path = fillPath,
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        barColor.copy(alpha = 0.35f),
-                                        Color.Transparent
-                                    ),
-                                    startY = points.minOf { it.y },
-                                    endY = size.height
+                            val startY = points.minOf { it.y }
+                            val endY = size.height
+                            if (startY < endY) {
+                                drawPath(
+                                    path = fillPath,
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            barColor.copy(alpha = 0.35f),
+                                            Color.Transparent
+                                        ),
+                                        startY = startY,
+                                        endY = endY
+                                    )
                                 )
-                            )
+                            }
 
                             // 2. Draw line path
                             val strokePath = androidx.compose.ui.graphics.Path().apply {
@@ -268,7 +276,7 @@ fun SpendingTrendChart(
         }
 
         // X-axis labels (scrollable, synchronized, perfectly aligned)
-        val barSlotWidth = chartWidth / data.size
+        val barSlotWidth = if (data.isNotEmpty()) chartWidth / data.size else 0.dp
         Row(
             modifier = Modifier
                 .fillMaxWidth()

@@ -52,7 +52,13 @@ class HistoryViewModel(
         }.flatMapLatest { (query, range) ->
             _uiState.update { it.copy(isLoading = true) }
             if (query.isNotBlank()) {
-                expenseRepository.searchExpenses(query)
+                if (range != null) {
+                    expenseRepository.searchExpenses(query).map { list ->
+                        list.filter { it.date.date in range.first..range.second }
+                    }
+                } else {
+                    expenseRepository.searchExpenses(query)
+                }
             } else if (range != null) {
                 expenseRepository.getExpensesByDateRange(range.first, range.second)
             } else {

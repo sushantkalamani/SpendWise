@@ -191,19 +191,29 @@ fun AnalyticsScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            IconButton(
-                                onClick = { viewModel.toggleChartType() },
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Icon(
-                                    imageVector = if (uiState.chartType == ChartType.BAR) {
-                                        Icons.AutoMirrored.Filled.ShowChart
-                                    } else {
-                                        Icons.Filled.BarChart
-                                    },
-                                    contentDescription = "Toggle Chart Type",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
+                            SingleChoiceSegmentedButtonRow {
+                                SegmentedButton(
+                                    selected = uiState.chartType == ChartType.BAR,
+                                    onClick = { if (uiState.chartType != ChartType.BAR) viewModel.toggleChartType() },
+                                    shape = SegmentedButtonDefaults.itemShape(0, 2)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.BarChart,
+                                        contentDescription = "Bar Chart",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                SegmentedButton(
+                                    selected = uiState.chartType == ChartType.LINE,
+                                    onClick = { if (uiState.chartType != ChartType.LINE) viewModel.toggleChartType() },
+                                    shape = SegmentedButtonDefaults.itemShape(1, 2)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ShowChart,
+                                        contentDescription = "Line Chart",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
                             }
 
                             SingleChoiceSegmentedButtonRow {
