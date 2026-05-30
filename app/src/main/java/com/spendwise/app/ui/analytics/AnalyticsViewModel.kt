@@ -168,6 +168,12 @@ class AnalyticsViewModel(
         }
     }
 
+    fun toggleChartType() {
+        _uiState.update {
+            it.copy(chartType = if (it.chartType == ChartType.BAR) ChartType.LINE else ChartType.BAR)
+        }
+    }
+
     /** Toggles the expanded/collapsed state of a category in the breakdown list. */
     fun toggleExpandedCategory(categoryId: Long) {
         _uiState.update {

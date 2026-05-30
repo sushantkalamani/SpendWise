@@ -8,6 +8,8 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -185,23 +187,44 @@ fun AnalyticsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("Spending Trend", style = MaterialTheme.typography.titleMedium)
-                        SingleChoiceSegmentedButtonRow {
-                            SegmentedButton(
-                                selected = uiState.viewMode == ChartViewMode.DAILY,
-                                onClick = { if (uiState.viewMode != ChartViewMode.DAILY) viewModel.toggleViewMode() },
-                                shape = SegmentedButtonDefaults.itemShape(0, 2)
-                            ) { Text("Daily") }
-                            SegmentedButton(
-                                selected = uiState.viewMode == ChartViewMode.WEEKLY,
-                                onClick = { if (uiState.viewMode != ChartViewMode.WEEKLY) viewModel.toggleViewMode() },
-                                shape = SegmentedButtonDefaults.itemShape(1, 2)
-                            ) { Text("Weekly") }
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = { viewModel.toggleChartType() },
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (uiState.chartType == ChartType.BAR) {
+                                        Icons.AutoMirrored.Filled.ShowChart
+                                    } else {
+                                        Icons.Filled.BarChart
+                                    },
+                                    contentDescription = "Toggle Chart Type",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+
+                            SingleChoiceSegmentedButtonRow {
+                                SegmentedButton(
+                                    selected = uiState.viewMode == ChartViewMode.DAILY,
+                                    onClick = { if (uiState.viewMode != ChartViewMode.DAILY) viewModel.toggleViewMode() },
+                                    shape = SegmentedButtonDefaults.itemShape(0, 2)
+                                ) { Text("Daily") }
+                                SegmentedButton(
+                                    selected = uiState.viewMode == ChartViewMode.WEEKLY,
+                                    onClick = { if (uiState.viewMode != ChartViewMode.WEEKLY) viewModel.toggleViewMode() },
+                                    shape = SegmentedButtonDefaults.itemShape(1, 2)
+                                ) { Text("Weekly") }
+                            }
                         }
                     }
                     Spacer(Modifier.height(12.dp))
                     SpendingTrendChart(
                         dailyTotals = uiState.dailyTotals,
-                        viewMode = uiState.viewMode
+                        viewMode = uiState.viewMode,
+                        chartType = uiState.chartType
                     )
                 }
             }

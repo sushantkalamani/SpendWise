@@ -28,7 +28,8 @@ data class AnalyticsUiState(
 
     // Tag-wise breakdown per category (key = category ID)
     val tagBreakdowns: Map<Long, List<TagSpend>> = emptyMap(),
-    val expandedCategoryId: Long? = null
+    val expandedCategoryId: Long? = null,
+    val chartType: ChartType = ChartType.BAR
 )
 
 /**
@@ -57,3 +58,6 @@ data class TagSpend(
 
 /** Toggle between daily and weekly chart grouping. */
 enum class ChartViewMode { DAILY, WEEKLY }
+
+/** Toggle between bar and line chart representations. */
+enum class ChartType { BAR, LINE }

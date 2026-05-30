@@ -89,10 +89,14 @@ fun CategoryDonutChart(
                             val dy = offset.y - center.y
                             val distance = sqrt(dx * dx + dy * dy)
                             val strokeWidth = 32.dp.toPx()
+                            val maxStroke = strokeWidth + 6.dp.toPx()
                             val radius = size.width / 2f
+                            val strokeCenter = radius - maxStroke / 2f
+                            val innerLimit = strokeCenter - strokeWidth / 2f
+                            val outerLimit = strokeCenter + maxStroke / 2f
 
                             // Only register taps on the donut ring
-                            if (distance in (radius - strokeWidth)..(radius)) {
+                            if (distance in innerLimit..outerLimit) {
                                 // atan2 gives angle in radians; convert to degrees matching Canvas convention
                                 var angleDeg = Math.toDegrees(atan2(dy.toDouble(), dx.toDouble())).toFloat()
                                 // Normalize to match our -90° start
@@ -116,6 +120,10 @@ fun CategoryDonutChart(
                     }
             ) {
                 val strokeWidth = 32.dp.toPx()
+                val maxStroke = strokeWidth + 6.dp.toPx()
+                val inset = maxStroke / 2f
+                val arcSize = Size(size.width - maxStroke, size.height - maxStroke)
+                val arcTopLeft = Offset(inset, inset)
                 var startAngle = -90f
                 breakdown.forEachIndexed { index, spend ->
                     val sweep = (spend.percentage / 100 * 360).toFloat()
@@ -130,6 +138,8 @@ fun CategoryDonutChart(
                         startAngle = startAngle,
                         sweepAngle = sweep,
                         useCenter = false,
+                        topLeft = arcTopLeft,
+                        size = arcSize,
                         style = Stroke(
                             width = if (isSelected) strokeWidth + 6.dp.toPx() else strokeWidth,
                             cap = StrokeCap.Butt

@@ -7,6 +7,7 @@ import com.spendwise.app.domain.model.PaymentMethod
 import com.spendwise.app.domain.repository.CategoryRepository
 import com.spendwise.app.domain.repository.ExpenseRepository
 import com.spendwise.app.domain.usecase.GetMonthPeriodUseCase
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -18,7 +19,7 @@ import kotlinx.datetime.LocalDate
  * Provides search, category/payment-method filtering, date-range filtering,
  * sorting, and delete-with-undo for the expense history list.
  */
-@OptIn(FlowPreview::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class HistoryViewModel(
     private val expenseRepository: ExpenseRepository,
     private val categoryRepository: CategoryRepository,
@@ -29,6 +30,7 @@ class HistoryViewModel(
     val uiState: StateFlow<HistoryUiState> = _uiState.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
+    private val _customDateRange = MutableStateFlow<Pair<LocalDate, LocalDate>?>(null)
 
     /** Holds the most recently deleted expense for undo support. */
     private val _lastDeletedExpense = MutableStateFlow<Expense?>(null)
@@ -41,25 +43,27 @@ class HistoryViewModel(
             }
         }
 
-        viewModelScope.launch {
-            val period = monthPeriodUseCase.getCurrentPeriod()
-            expenseRepository.getExpensesByDateRange(period.startDate, period.endDate).collect { expenses ->
-                _uiState.update { it.copy(expenses = expenses, isLoading = false) }
+        // Single reactive pipeline to fetch expenses based on query and date range
+        val expensesFlow = combine(
+            _searchQuery.debounce { if (it.isEmpty()) 0L else 300L },
+            _customDateRange
+        ) { query, range ->
+            Pair(query, range)
+        }.flatMapLatest { (query, range) ->
+            _uiState.update { it.copy(isLoading = true) }
+            if (query.isNotBlank()) {
+                expenseRepository.searchExpenses(query)
+            } else if (range != null) {
+                expenseRepository.getExpensesByDateRange(range.first, range.second)
+            } else {
+                val period = monthPeriodUseCase.getCurrentPeriod()
+                expenseRepository.getExpensesByDateRange(period.startDate, period.endDate)
             }
         }
 
         viewModelScope.launch {
-            _searchQuery.debounce(300).collectLatest { query ->
-                if (query.isBlank()) {
-                    val period = monthPeriodUseCase.getCurrentPeriod()
-                    expenseRepository.getExpensesByDateRange(period.startDate, period.endDate).collect { expenses ->
-                        _uiState.update { it.copy(expenses = expenses) }
-                    }
-                } else {
-                    expenseRepository.searchExpenses(query).collect { expenses ->
-                        _uiState.update { it.copy(expenses = expenses) }
-                    }
-                }
+            expensesFlow.collect { expenses ->
+                _uiState.update { it.copy(expenses = expenses, isLoading = false) }
             }
         }
 
@@ -106,23 +110,14 @@ class HistoryViewModel(
      * Also reloads expenses from the repository for that range.
      */
     fun setDateRange(start: LocalDate, end: LocalDate) {
-        _uiState.update { it.copy(dateRangeStart = start, dateRangeEnd = end, isLoading = true).recalcFilterCount() }
-        viewModelScope.launch {
-            expenseRepository.getExpensesByDateRange(start, end).collect { expenses ->
-                _uiState.update { it.copy(expenses = expenses, isLoading = false) }
-            }
-        }
+        _uiState.update { it.copy(dateRangeStart = start, dateRangeEnd = end).recalcFilterCount() }
+        _customDateRange.value = Pair(start, end)
     }
 
     /** Clears the date range filter, reverting to the current month. */
     fun clearDateRange() {
-        _uiState.update { it.copy(dateRangeStart = null, dateRangeEnd = null, isLoading = true).recalcFilterCount() }
-        viewModelScope.launch {
-            val period = monthPeriodUseCase.getCurrentPeriod()
-            expenseRepository.getExpensesByDateRange(period.startDate, period.endDate).collect { expenses ->
-                _uiState.update { it.copy(expenses = expenses, isLoading = false) }
-            }
-        }
+        _uiState.update { it.copy(dateRangeStart = null, dateRangeEnd = null).recalcFilterCount() }
+        _customDateRange.value = null
     }
 
     // ---- Sort ----
@@ -147,12 +142,7 @@ class HistoryViewModel(
             )
         }
         _searchQuery.value = ""
-        viewModelScope.launch {
-            val period = monthPeriodUseCase.getCurrentPeriod()
-            expenseRepository.getExpensesByDateRange(period.startDate, period.endDate).collect { expenses ->
-                _uiState.update { it.copy(expenses = expenses) }
-            }
-        }
+        _customDateRange.value = null
     }
 
     // ---- Delete with undo ----
