@@ -1,10 +1,14 @@
 package com.spendwise.app.ui.home.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.spendwise.app.ui.components.MatteCard
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -29,11 +33,26 @@ fun MonthSummaryCard(
         else -> MaterialTheme.colorScheme.primary
     }
 
-    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+    MatteCard(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(20.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(
+                    Icons.AutoMirrored.Filled.TrendingUp,
+                    contentDescription = null,
+                    tint = progressColor,
+                    modifier = Modifier.size(18.dp)
+                )
+                Text(
+                    "Monthly spend",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(Modifier.height(8.dp))
             Text(
                 currencyFormat.format(totalSpent),
-                style = MaterialTheme.typography.displayMedium
+                style = MaterialTheme.typography.displayMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
             if (totalBudget != null) {
                 Spacer(Modifier.height(4.dp))
@@ -52,11 +71,19 @@ fun MonthSummaryCard(
                     trackColor = MaterialTheme.colorScheme.surfaceVariant
                 )
                 Spacer(Modifier.height(8.dp))
-                Text(
-                    "${(ratio * 100).toInt()}% used · $daysRemaining days remaining",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Icon(
+                        Icons.Filled.CalendarMonth,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Text(
+                        "${(ratio * 100).toInt()}% used · $daysRemaining days remaining",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             } else {
                 Spacer(Modifier.height(4.dp))
                 Text(

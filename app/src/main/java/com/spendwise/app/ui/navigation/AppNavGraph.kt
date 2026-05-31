@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCard
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -69,10 +69,15 @@ private fun MainAppContent() {
     var showDetailedAdd by remember { mutableStateOf(false) }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = { BottomNavBar(navController) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddExpenseSheet = true }) {
-                Icon(Icons.Filled.Add, contentDescription = "Add expense")
+            FloatingActionButton(
+                onClick = { showAddExpenseSheet = true },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(Icons.Filled.AddCard, contentDescription = "Add expense")
             }
         }
     ) { innerPadding ->

@@ -1,6 +1,7 @@
 package com.spendwise.app.ui.addexpense
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -10,6 +11,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import com.spendwise.app.ui.components.AmountInput
 import com.spendwise.app.ui.components.CategoryChipGrid
+import com.spendwise.app.ui.components.SectionHeader
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,7 +41,8 @@ fun AddExpenseSheet(
         onDismissRequest = {
             onDismiss()
             viewModel.resetState()
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surface
     ) {
         Column(
             modifier = Modifier
@@ -59,7 +62,7 @@ fun AddExpenseSheet(
                 modifier = Modifier.focusRequester(focusRequester)
             )
 
-            Text("Category", style = MaterialTheme.typography.labelLarge)
+            SectionHeader("Category")
 
             CategoryChipGrid(
                 categories = uiState.categories,
@@ -79,7 +82,8 @@ fun AddExpenseSheet(
 
                 Button(
                     onClick = viewModel::saveExpense,
-                    enabled = !uiState.isSaving
+                    enabled = !uiState.isSaving,
+                    shape = RoundedCornerShape(8.dp)
                 ) {
                     if (uiState.isSaving) {
                         CircularProgressIndicator(

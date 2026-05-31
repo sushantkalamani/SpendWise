@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.spendwise.app.data.backup.DatabaseBackupManager
 import com.spendwise.app.data.export.CsvExporter
 import com.spendwise.app.data.export.CsvImporter
+import com.spendwise.app.domain.model.Category
 import com.spendwise.app.domain.model.ExpenseSource
 import com.spendwise.app.domain.model.Expense
 import com.spendwise.app.domain.model.PaymentMethod
@@ -157,16 +158,34 @@ class SettingsViewModel(
             _uiState.update { it.copy(importStatus = OperationStatus.Loading, showImportPreview = false) }
             try {
                 val categories = categoryRepository.getAllCategories().first()
-                val categoryMap = categories.associateBy { it.name.lowercase() }
+                val categoryMap = categories.associateBy { it.name.normalizedCategoryKey() }.toMutableMap()
 
                 var importedCount = 0
+                var createdCategoryCount = 0
                 var skippedDuplicates = 0
 
                 for (row in result.validRows) {
                     val date = row.date ?: continue
                     val amount = row.amount ?: continue
-                    val category = row.categoryName?.let { name ->
-                        categoryMap[name.lowercase()]
+                    val category = row.categoryName
+                        ?.takeUnless { it.equals("Uncategorized", ignoreCase = true) }
+                        ?.let { rawName ->
+                            val categoryName = rawName.trim()
+                            val key = categoryName.normalizedCategoryKey()
+                            categoryMap[key] ?: run {
+                                val sortOrder = categoryMap.values.maxOfOrNull { it.sortOrder }?.plus(1) ?: 0
+                                val newCategory = Category(
+                                    name = categoryName,
+                                    icon = inferCategoryIcon(categoryName),
+                                    colorHex = colorForImportedCategory(categoryName),
+                                    sortOrder = sortOrder
+                                )
+                                val id = categoryRepository.addCategory(newCategory)
+                                newCategory.copy(id = id).also {
+                                    categoryMap[key] = it
+                                    createdCategoryCount++
+                                }
+                            }
                     }
 
                     // Duplicate check
@@ -204,6 +223,7 @@ class SettingsViewModel(
 
                 val msg = buildString {
                     append("Imported $importedCount expenses")
+                    if (createdCategoryCount > 0) append(", created $createdCategoryCount categories")
                     if (skippedDuplicates > 0) append(", skipped $skippedDuplicates duplicates")
                     if (result.invalidRows.isNotEmpty()) append(", ${result.invalidRows.size} rows had errors")
                 }
@@ -217,6 +237,35 @@ class SettingsViewModel(
     /** Dismisses the import preview without saving. */
     fun dismissImportPreview() {
         _uiState.update { it.copy(showImportPreview = false, importPreviewResult = null) }
+    }
+
+    private fun String.normalizedCategoryKey(): String = trim().lowercase()
+
+    private fun inferCategoryIcon(name: String): String {
+        val normalized = name.lowercase()
+        return when {
+            listOf("food", "dining", "restaurant", "coffee", "cafe").any { it in normalized } -> "Restaurant"
+            listOf("transport", "cab", "taxi", "fuel", "car", "metro").any { it in normalized } -> "DirectionsCar"
+            listOf("bill", "utility", "rent", "subscription").any { it in normalized } -> "Receipt"
+            listOf("shop", "clothes", "fashion").any { it in normalized } -> "ShoppingBag"
+            listOf("health", "doctor", "medical", "pharmacy").any { it in normalized } -> "LocalHospital"
+            listOf("movie", "entertainment", "game").any { it in normalized } -> "Movie"
+            listOf("grocery", "groceries", "market").any { it in normalized } -> "ShoppingCart"
+            listOf("travel", "flight", "trip").any { it in normalized } -> "Flight"
+            listOf("school", "education", "course").any { it in normalized } -> "School"
+            listOf("pet", "pets").any { it in normalized } -> "Pets"
+            else -> "MoreHoriz"
+        }
+    }
+
+    private fun colorForImportedCategory(name: String): String {
+        val palette = listOf(
+            "#4CAF50", "#2196F3", "#FF9800", "#E91E63",
+            "#F44336", "#9C27B0", "#8BC34A", "#607D8B",
+            "#00BCD4", "#FFEB3B", "#795548", "#3F51B5"
+        )
+        val index = Math.floorMod(name.normalizedCategoryKey().hashCode(), palette.size)
+        return palette[index]
     }
 
     // ---- Backup / Restore ----

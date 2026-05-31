@@ -1,5 +1,6 @@
 package com.spendwise.app.ui.analytics
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,6 +21,8 @@ import com.spendwise.app.ui.analytics.components.BudgetVsActualList
 import com.spendwise.app.ui.analytics.components.CategoryDonutChart
 import com.spendwise.app.ui.analytics.components.RenameTagDialog
 import com.spendwise.app.ui.analytics.components.SpendingTrendChart
+import com.spendwise.app.ui.components.MatteCard
+import com.spendwise.app.ui.components.SectionHeader
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -49,6 +52,7 @@ fun AnalyticsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -60,14 +64,23 @@ fun AnalyticsScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { viewModel.previousMonth() }) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "Previous month")
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                    "Previous month",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             Text(
                 uiState.currentPeriod?.label ?: "Loading...",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground
             )
             IconButton(onClick = { viewModel.nextMonth() }) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, "Next month")
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    "Next month",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
 
@@ -108,9 +121,9 @@ fun AnalyticsScreen(
             }
         } else {
             // ---- Insights card ----
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+            MatteCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("📊 Insights", style = MaterialTheme.typography.titleMedium)
+                    SectionHeader("Insights", icon = Icons.Filled.PieChart)
 
                     uiState.topSpendingCategory?.let { top ->
                         Row(
@@ -162,7 +175,7 @@ fun AnalyticsScreen(
             }
 
             // Donut chart — clickable with tag breakdown
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+            MatteCard(modifier = Modifier.fillMaxWidth()) {
                 CategoryDonutChart(
                     breakdown = uiState.categoryBreakdown,
                     totalAmount = uiState.summary?.totalSpent ?: 0.0,
@@ -179,12 +192,12 @@ fun AnalyticsScreen(
             }
 
             // Spending trend
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+            MatteCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
+                    SectionHeader(
                         text = "Spending Trend",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 12.dp)
+                        icon = Icons.AutoMirrored.Filled.ShowChart,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -254,9 +267,9 @@ fun AnalyticsScreen(
 
             // Budget vs Actual
             if (uiState.categoryBreakdown.any { it.budgetLimit != null }) {
-                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                MatteCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Budget vs Actual", style = MaterialTheme.typography.titleMedium)
+                        SectionHeader("Budget vs Actual", icon = Icons.Filled.Warning)
                         Spacer(Modifier.height(12.dp))
                         BudgetVsActualList(breakdown = uiState.categoryBreakdown)
                     }

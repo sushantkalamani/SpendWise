@@ -7,9 +7,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.spendwise.app.domain.model.Expense
+import com.spendwise.app.ui.components.CategoryIconBadge
+import com.spendwise.app.ui.components.rememberCategoryColor
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -42,15 +43,12 @@ fun ExpenseDetailSheet(
     val currencyFormat = NumberFormat.getCurrencyInstance(Locale("en", "IN")).apply {
         maximumFractionDigits = 0
     }
-    val categoryColor = try {
-        expense.category?.colorHex?.let { Color(android.graphics.Color.parseColor(it)) }
-    } catch (_: Exception) {
-        null
-    } ?: MaterialTheme.colorScheme.primary
+    val categoryColor = rememberCategoryColor(expense.category?.colorHex)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface
     ) {
         Column(
             modifier = Modifier
@@ -75,19 +73,13 @@ fun ExpenseDetailSheet(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Surface(
-                            color = categoryColor.copy(alpha = 0.15f),
-                            shape = MaterialTheme.shapes.small,
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text(
-                                    expense.category?.name?.first()?.toString() ?: "?",
-                                    color = categoryColor,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                        }
+                        CategoryIconBadge(
+                            iconName = expense.category?.icon,
+                            contentDescription = expense.category?.name,
+                            color = categoryColor,
+                            size = 28.dp,
+                            iconSize = 16.dp
+                        )
                         Text(
                             expense.category?.name ?: "Uncategorized",
                             style = MaterialTheme.typography.titleSmall,

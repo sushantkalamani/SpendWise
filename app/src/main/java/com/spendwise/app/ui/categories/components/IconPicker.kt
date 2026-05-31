@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.spendwise.app.ui.components.categoryIconFor
 
 val availableIcons = listOf("Restaurant", "DirectionsCar", "Receipt", "ShoppingBag", "LocalHospital", "Movie", "ShoppingCart", "MoreHoriz", "Flight", "School", "Pets", "Bolt", "Checkroom", "SportsEsports")
 
@@ -24,7 +25,11 @@ fun IconPicker(selectedIcon: String, onIconSelected: (String) -> Unit, modifier:
                 ),
                 modifier = Modifier.size(44.dp)
             ) {
-                Text(icon.first().toString(), style = MaterialTheme.typography.bodySmall)
+                Icon(
+                    imageVector = categoryIconFor(icon),
+                    contentDescription = icon,
+                    modifier = Modifier.size(22.dp)
+                )
             }
         }
     }

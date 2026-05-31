@@ -18,7 +18,10 @@ fun CategoryEditSheet(
     var icon by remember { mutableStateOf(existingCategory?.icon ?: "Restaurant") }
     var colorHex by remember { mutableStateOf(existingCategory?.colorHex ?: "#4CAF50") }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface
+    ) {
         Column(modifier = Modifier.padding(24.dp).padding(bottom = 32.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(if (existingCategory != null) "Edit Category" else "Add Category", style = MaterialTheme.typography.titleMedium)
 

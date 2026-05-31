@@ -4,20 +4,62 @@ import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColorScheme = lightColorScheme(
     primary = Green40,
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFE5F4E7),
+    onPrimaryContainer = Color(0xFF06210A),
     secondary = Blue40,
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFE5F2FF),
+    onSecondaryContainer = Color(0xFF031E36),
     tertiary = Orange40,
-    error = Red40
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFFFE8CC),
+    onTertiaryContainer = Color(0xFF2A1600),
+    error = Red40,
+    background = Color(0xFFFAFCFA),
+    onBackground = Color(0xFF181D19),
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF181D19),
+    surfaceVariant = Color(0xFFEFF3EF),
+    onSurfaceVariant = Color(0xFF535D55),
+    outline = Color(0xFF737D75),
+    outlineVariant = Color(0xFFD6DED7)
 )
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Green80,
-    secondary = Blue80,
-    tertiary = Orange80,
-    error = Red80
+private val MatteColorScheme = darkColorScheme(
+    primary = MatteMint,
+    onPrimary = MatteBlack,
+    primaryContainer = MatteMintContainer,
+    onPrimaryContainer = MatteMint,
+    secondary = MatteCyan,
+    onSecondary = MatteBlack,
+    secondaryContainer = MatteCyanContainer,
+    onSecondaryContainer = MatteCyan,
+    tertiary = MatteAmber,
+    onTertiary = MatteBlack,
+    tertiaryContainer = MatteAmberContainer,
+    onTertiaryContainer = MatteAmber,
+    error = MatteCoral,
+    onError = MatteBlack,
+    errorContainer = MatteCoralContainer,
+    onErrorContainer = MatteCoral,
+    background = MatteBlack,
+    onBackground = MatteText,
+    surface = MatteSurface,
+    onSurface = MatteText,
+    surfaceVariant = MatteSurfaceVariant,
+    onSurfaceVariant = MatteTextMuted,
+    outline = MatteOutline,
+    outlineVariant = MatteOutlineSoft,
+    inverseSurface = MatteText,
+    inverseOnSurface = MatteBlack,
+    scrim = Color(0xCC000000),
+    surfaceTint = MatteMint
 )
 
 @Composable
@@ -33,11 +75,11 @@ fun SpendWiseTheme(
     }
 
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        dynamicColor && !darkTheme && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
+        darkTheme -> MatteColorScheme
         else -> LightColorScheme
     }
 

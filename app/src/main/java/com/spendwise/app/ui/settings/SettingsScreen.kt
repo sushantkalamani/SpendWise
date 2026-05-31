@@ -20,8 +20,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.spendwise.app.ui.components.MatteCard
+import com.spendwise.app.ui.components.SectionHeader
 
 /**
  * Settings screen with user preferences and data management actions.
@@ -106,10 +109,16 @@ fun SettingsScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text("Profile & Settings") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") } }
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") } },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -119,8 +128,8 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // MONTH CONFIGURATION
-            Text("MONTH CONFIGURATION", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 8.dp))
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+            SectionHeader("Month Configuration", icon = Icons.Filled.CalendarMonth)
+            MatteCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("Month mode", style = MaterialTheme.typography.bodyMedium)
                     Spacer(Modifier.height(8.dp))
@@ -149,8 +158,8 @@ fun SettingsScreen(
             }
 
             // INCOME
-            Text("INCOME", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 16.dp))
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+            SectionHeader("Income", icon = Icons.Filled.AccountBalanceWallet, modifier = Modifier.padding(top = 8.dp))
+            MatteCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     OutlinedTextField(
                         value = uiState.monthlyIncome,
@@ -165,8 +174,8 @@ fun SettingsScreen(
             }
 
             // REMINDER
-            Text("DAILY REMINDER", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 16.dp))
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+            SectionHeader("Daily Reminder", icon = Icons.Filled.Notifications, modifier = Modifier.padding(top = 8.dp))
+            MatteCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Column {
@@ -202,13 +211,13 @@ fun SettingsScreen(
             }
 
             // APPEARANCE
-            Text("APPEARANCE", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 16.dp))
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+            SectionHeader("Appearance", icon = Icons.Filled.Palette, modifier = Modifier.padding(top = 8.dp))
+            MatteCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("Theme", style = MaterialTheme.typography.bodyMedium)
                     Spacer(Modifier.height(8.dp))
                     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                        listOf("system" to "System", "light" to "Light", "dark" to "Dark").forEachIndexed { index, (value, label) ->
+                        listOf("system" to "System", "light" to "Light", "dark" to "Matte").forEachIndexed { index, (value, label) ->
                             SegmentedButton(
                                 selected = uiState.themeMode == value,
                                 onClick = { viewModel.setThemeMode(value) },
@@ -222,7 +231,7 @@ fun SettingsScreen(
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                             Column {
                                 Text("Dynamic colors", style = MaterialTheme.typography.bodyMedium)
-                                Text("Colors from your wallpaper", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("Wallpaper colors for light mode", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             Switch(checked = uiState.isDynamicColor, onCheckedChange = viewModel::setDynamicColor)
                         }
@@ -231,8 +240,8 @@ fun SettingsScreen(
             }
 
             // DATA
-            Text("DATA", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 16.dp))
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+            SectionHeader("Data", icon = Icons.Filled.Storage, modifier = Modifier.padding(top = 8.dp))
+            MatteCard(modifier = Modifier.fillMaxWidth()) {
                 Column {
                     // Export to CSV
                     ListItem(
@@ -246,6 +255,7 @@ fun SettingsScreen(
                                 Icon(Icons.Filled.ChevronRight, contentDescription = null)
                             }
                         },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         modifier = Modifier.clickable {
                             exportLauncher.launch("spendwise_export.csv")
                         }
@@ -258,6 +268,7 @@ fun SettingsScreen(
                         supportingContent = { Text("Share CSV via apps") },
                         leadingContent = { Icon(Icons.Filled.Share, contentDescription = null) },
                         trailingContent = { Icon(Icons.Filled.ChevronRight, contentDescription = null) },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         modifier = Modifier.clickable { viewModel.shareCsvExport() }
                     )
                     HorizontalDivider()
@@ -274,6 +285,7 @@ fun SettingsScreen(
                                 Icon(Icons.Filled.ChevronRight, contentDescription = null)
                             }
                         },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         modifier = Modifier.clickable {
                             importLauncher.launch(arrayOf("text/csv", "text/comma-separated-values", "*/*"))
                         }
@@ -292,6 +304,7 @@ fun SettingsScreen(
                                 Icon(Icons.Filled.ChevronRight, contentDescription = null)
                             }
                         },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         modifier = Modifier.clickable {
                             backupLauncher.launch("spendwise_backup.db")
                         }
@@ -310,6 +323,7 @@ fun SettingsScreen(
                                 Icon(Icons.Filled.ChevronRight, contentDescription = null)
                             }
                         },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         modifier = Modifier.clickable {
                             restoreLauncher.launch(arrayOf("application/octet-stream", "*/*"))
                         }
@@ -334,15 +348,19 @@ fun SettingsScreen(
                                 Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                             }
                         },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         modifier = Modifier.clickable { viewModel.requestClearData() }
                     )
                 }
             }
 
             // ABOUT
-            Text("ABOUT", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 16.dp))
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                ListItem(headlineContent = { Text("SpendWise v$versionName") })
+            SectionHeader("About", icon = Icons.Filled.Info, modifier = Modifier.padding(top = 8.dp))
+            MatteCard(modifier = Modifier.fillMaxWidth()) {
+                ListItem(
+                    headlineContent = { Text("SpendWise v$versionName") },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                )
             }
 
             Spacer(Modifier.height(32.dp))
@@ -455,5 +473,4 @@ fun SettingsScreen(
         )
     }
 }
-
 

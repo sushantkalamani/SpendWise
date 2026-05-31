@@ -25,6 +25,6 @@ data class BottomNavItem(
 val bottomNavItems = listOf(
     BottomNavItem("Home", HomeRoute, Icons.Filled.Home, Icons.Outlined.Home),
     BottomNavItem("Analytics", AnalyticsRoute, Icons.Filled.PieChart, Icons.Outlined.PieChart),
-    BottomNavItem("History", HistoryRoute, Icons.Filled.Receipt, Icons.Outlined.Receipt),
+    BottomNavItem("History", HistoryRoute(), Icons.Filled.Receipt, Icons.Outlined.Receipt),
     BottomNavItem("Categories", CategoriesRoute, Icons.Filled.Category, Icons.Outlined.Category)
 )

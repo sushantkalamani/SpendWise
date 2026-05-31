@@ -3,10 +3,10 @@ package com.spendwise.app.ui.components
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.spendwise.app.domain.model.Category
 
@@ -22,19 +22,31 @@ fun CategoryChipGrid(
     FlowRow(modifier = modifier) {
         categories.forEach { category ->
             val isSelected = selectedCategory?.id == category.id
+            val categoryColor = rememberCategoryColor(category.colorHex)
             FilterChip(
                 selected = isSelected,
                 onClick = { onCategorySelected(category) },
                 label = { Text(category.name) },
-                leadingIcon = if (isSelected) {
-                    { Text("\u2713") }
-                } else null,
+                leadingIcon = {
+                    Icon(
+                        imageVector = categoryIconFor(category.icon),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = try {
-                        Color(android.graphics.Color.parseColor(category.colorHex)).copy(alpha = 0.2f)
-                    } catch (_: Exception) {
-                        MaterialTheme.colorScheme.primaryContainer
-                    }
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    iconColor = categoryColor,
+                    selectedContainerColor = categoryColor.copy(alpha = 0.22f),
+                    selectedLabelColor = MaterialTheme.colorScheme.onSurface,
+                    selectedLeadingIconColor = categoryColor
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = isSelected,
+                    borderColor = MaterialTheme.colorScheme.outlineVariant,
+                    selectedBorderColor = categoryColor.copy(alpha = 0.8f)
                 ),
                 modifier = Modifier.padding(end = 8.dp, bottom = 4.dp)
             )

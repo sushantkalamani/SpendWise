@@ -2,6 +2,24 @@ package com.spendwise.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+val MatteBlack = Color(0xFF090A0C)
+val MatteSurface = Color(0xFF101114)
+val MatteSurfaceHigh = Color(0xFF17191D)
+val MatteSurfaceVariant = Color(0xFF202329)
+val MatteOutline = Color(0xFF343842)
+val MatteOutlineSoft = Color(0xFF262A31)
+val MatteText = Color(0xFFF4F7F8)
+val MatteTextMuted = Color(0xFFA9B0BB)
+val MatteTextDisabled = Color(0xFF6F7782)
+val MatteMint = Color(0xFF7CF7C8)
+val MatteMintContainer = Color(0xFF123B31)
+val MatteCyan = Color(0xFF6ED6FF)
+val MatteCyanContainer = Color(0xFF123142)
+val MatteAmber = Color(0xFFF5C76B)
+val MatteAmberContainer = Color(0xFF433313)
+val MatteCoral = Color(0xFFFF6B6B)
+val MatteCoralContainer = Color(0xFF4E1D22)
+
 val Green40 = Color(0xFF2E7D32)
 val Green80 = Color(0xFFA5D6A7)
 val GreenGrey40 = Color(0xFF4E6E50)

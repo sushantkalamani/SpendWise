@@ -12,6 +12,8 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
+import androidx.compose.ui.graphics.Color
+import androidx.glance.color.ColorProvider
 import androidx.glance.layout.*
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
@@ -21,6 +23,10 @@ import com.spendwise.app.ui.MainActivity
 import kotlinx.datetime.*
 import java.text.NumberFormat
 import java.util.Locale
+private val WidgetBackground = ColorProvider(day = Color(0xFF090A0C), night = Color(0xFF090A0C))
+private val WidgetMint = ColorProvider(day = Color(0xFF7CF7C8), night = Color(0xFF7CF7C8))
+private val WidgetText = ColorProvider(day = Color(0xFFF4F7F8), night = Color(0xFFF4F7F8))
+private val WidgetTextMuted = ColorProvider(day = Color(0xFFA9B0BB), night = Color(0xFFA9B0BB))
 
 /**
  * Home-screen widget showing a spending snapshot and quick-add action.
@@ -94,7 +100,7 @@ class QuickExpenseWidget : GlanceAppWidget() {
                 modifier = GlanceModifier
                     .fillMaxSize()
                     .padding(16.dp)
-                    .background(GlanceTheme.colors.surface)
+                    .background(WidgetBackground)
                     .clickable(actionStartActivity<MainActivity>()),
                 verticalAlignment = Alignment.Top,
                 horizontalAlignment = Alignment.Start
@@ -103,7 +109,7 @@ class QuickExpenseWidget : GlanceAppWidget() {
                 Text(
                     text = "SpendWise",
                     style = TextStyle(
-                        color = GlanceTheme.colors.primary,
+                        color = WidgetMint,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -115,14 +121,14 @@ class QuickExpenseWidget : GlanceAppWidget() {
                 Text(
                     text = "Today",
                     style = TextStyle(
-                        color = GlanceTheme.colors.onSurfaceVariant,
+                        color = WidgetTextMuted,
                         fontSize = 11.sp
                     )
                 )
                 Text(
                     text = currencyFormat.format(allExpenses.first),
                     style = TextStyle(
-                        color = GlanceTheme.colors.onSurface,
+                        color = WidgetText,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -134,7 +140,7 @@ class QuickExpenseWidget : GlanceAppWidget() {
                 Text(
                     text = "This month: ${currencyFormat.format(allExpenses.second)}",
                     style = TextStyle(
-                        color = GlanceTheme.colors.onSurfaceVariant,
+                        color = WidgetTextMuted,
                         fontSize = 12.sp
                     )
                 )
@@ -149,7 +155,7 @@ class QuickExpenseWidget : GlanceAppWidget() {
                     Text(
                         text = "+ Add Expense",
                         style = TextStyle(
-                            color = GlanceTheme.colors.primary,
+                            color = WidgetMint,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )

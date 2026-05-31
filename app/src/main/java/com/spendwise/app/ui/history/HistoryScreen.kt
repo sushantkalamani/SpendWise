@@ -1,11 +1,13 @@
 package com.spendwise.app.ui.history
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterListOff
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -81,7 +83,11 @@ fun HistoryScreen(
         }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Search bar
             SearchBar(
@@ -98,6 +104,7 @@ fun HistoryScreen(
                 },
                 expanded = uiState.isSearchActive,
                 onExpandedChange = viewModel::toggleSearchActive,
+                colors = SearchBarDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
             ) {}
 
@@ -151,7 +158,7 @@ fun HistoryScreen(
                         // No expenses at all
                         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
                             Icon(
-                                Icons.Filled.Add,
+                                Icons.AutoMirrored.Filled.ReceiptLong,
                                 contentDescription = null,
                                 modifier = Modifier.size(48.dp),
                                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
@@ -187,6 +194,7 @@ fun HistoryScreen(
                 // ---- Expense list ----
                 LazyColumn(
                     modifier = Modifier.padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
                     grouped.forEach { (dateLabel, expenses) ->

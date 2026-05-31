@@ -1,13 +1,17 @@
 package com.spendwise.app.ui.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +23,8 @@ import com.spendwise.app.ui.expensedetail.ExpenseDetailSheet
 import com.spendwise.app.ui.home.components.MonthSummaryCard
 import com.spendwise.app.ui.home.components.RecentExpenseItem
 import com.spendwise.app.ui.home.components.TopCategoryChips
+import com.spendwise.app.ui.components.MetricTile
+import com.spendwise.app.ui.components.SectionHeader
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -66,7 +72,11 @@ fun HomeScreen(
         }
     }
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         // Month Selector & Profile Top Bar (Fixed)
         Row(
             modifier = Modifier
@@ -77,18 +87,31 @@ fun HomeScreen(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = { viewModel.previousMonth() }) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "Previous")
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        "Previous",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
                 Text(
                     uiState.currentPeriod?.label ?: "",
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 IconButton(onClick = { viewModel.nextMonth() }) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, "Next")
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        "Next",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
             IconButton(onClick = onNavigateToSettings) {
-                Icon(Icons.Filled.AccountCircle, "Profile")
+                Icon(
+                    Icons.Filled.AccountCircle,
+                    "Profile",
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
         }
 
@@ -108,7 +131,7 @@ fun HomeScreen(
                         Icons.Filled.Add,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
                     )
                     Spacer(Modifier.height(16.dp))
                     Text(
@@ -150,38 +173,21 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            OutlinedCard(modifier = Modifier.weight(1f)) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text(
-                                        "Income",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Text(
-                                        currencyFormat.format(uiState.monthlyIncome),
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                }
-                            }
-                            OutlinedCard(modifier = Modifier.weight(1f)) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text(
-                                        "Savings",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    val savings = (uiState.monthlyIncome ?: 0.0) - uiState.totalSpent
-                                    Text(
-                                        currencyFormat.format(savings),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = if (savings >= 0) {
-                                            MaterialTheme.colorScheme.primary
-                                        } else {
-                                            MaterialTheme.colorScheme.error
-                                        }
-                                    )
-                                }
-                            }
+                            MetricTile(
+                                label = "Income",
+                                value = currencyFormat.format(uiState.monthlyIncome),
+                                icon = Icons.Filled.AccountBalanceWallet,
+                                modifier = Modifier.weight(1f),
+                                accent = MaterialTheme.colorScheme.secondary
+                            )
+                            val savings = (uiState.monthlyIncome ?: 0.0) - uiState.totalSpent
+                            MetricTile(
+                                label = "Savings",
+                                value = currencyFormat.format(savings),
+                                icon = Icons.Filled.Savings,
+                                modifier = Modifier.weight(1f),
+                                accent = if (savings >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                            )
                         }
                     }
                 }
@@ -196,7 +202,7 @@ fun HomeScreen(
                 // Recent expenses header
                 if (uiState.recentExpenses.isNotEmpty()) {
                     item {
-                        Text("Recent Expenses", style = MaterialTheme.typography.titleMedium)
+                        SectionHeader("Recent Expenses", icon = Icons.AutoMirrored.Filled.ReceiptLong)
                     }
                 }
 

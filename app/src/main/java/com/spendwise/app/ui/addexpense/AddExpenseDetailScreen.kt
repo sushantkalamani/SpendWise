@@ -1,10 +1,14 @@
 package com.spendwise.app.ui.addexpense
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -15,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.spendwise.app.domain.model.PaymentMethod
 import com.spendwise.app.ui.components.AmountInput
 import com.spendwise.app.ui.components.CategoryChipGrid
+import com.spendwise.app.ui.components.SectionHeader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +40,7 @@ fun AddExpenseDetailScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text("Add Expense") },
@@ -42,13 +48,19 @@ fun AddExpenseDetailScreen(
                     IconButton(onClick = onDismiss) {
                         Icon(Icons.Filled.Close, contentDescription = "Close")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             )
         }
     ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(horizontal = 24.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -61,7 +73,7 @@ fun AddExpenseDetailScreen(
                 isError = uiState.amountError
             )
 
-            Text("Category", style = MaterialTheme.typography.labelLarge)
+            SectionHeader("Category")
             CategoryChipGrid(
                 categories = uiState.categories,
                 selectedCategory = uiState.selectedCategory,
@@ -100,7 +112,7 @@ fun AddExpenseDetailScreen(
             )
 
             // Payment method
-            Text("Payment Method", style = MaterialTheme.typography.labelLarge)
+            SectionHeader("Payment Method", icon = Icons.Filled.CreditCard)
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 val methods = listOf(PaymentMethod.UPI, PaymentMethod.CASH, PaymentMethod.CARD)
                 methods.forEachIndexed { index, method ->
@@ -115,7 +127,7 @@ fun AddExpenseDetailScreen(
             }
 
             // Tags
-            Text("Tags", style = MaterialTheme.typography.labelLarge)
+            SectionHeader("Tags", icon = Icons.AutoMirrored.Filled.Label)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -152,7 +164,8 @@ fun AddExpenseDetailScreen(
             Button(
                 onClick = viewModel::saveExpense,
                 enabled = !uiState.isSaving,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp)
             ) {
                 if (uiState.isSaving) {
                     CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)

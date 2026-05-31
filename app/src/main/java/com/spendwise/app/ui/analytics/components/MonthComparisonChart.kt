@@ -14,6 +14,7 @@ import com.spendwise.app.domain.usecase.CategoryComparison
 import com.spendwise.app.domain.usecase.MonthComparison
 import java.text.NumberFormat
 import java.util.Locale
+import com.spendwise.app.ui.components.MatteCard
 
 @Composable
 fun MonthComparisonChart(
@@ -26,7 +27,7 @@ fun MonthComparisonChart(
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         // Total comparison
-        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+        MatteCard(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Total Spending", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
@@ -48,7 +49,7 @@ fun MonthComparisonChart(
         }
 
         // Category comparison bars
-        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+        MatteCard(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("By Category", style = MaterialTheme.typography.titleMedium)
 
