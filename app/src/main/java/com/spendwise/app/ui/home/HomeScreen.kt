@@ -7,7 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -66,71 +66,73 @@ fun HomeScreen(
         }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
-        if (uiState.isLoading) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else if (uiState.recentExpenses.isEmpty() && uiState.totalSpent == 0.0) {
-            // ---- Empty state ----
-            Column(
-                modifier = Modifier.fillMaxSize().padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    Icons.Filled.Add,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-                )
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    "Track your first expense!",
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    "Tap the + button to add an expense and start tracking your spending.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
-            }
-        } else {
-            // ---- Main content ----
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp)
-            ) {
-                // Month selector
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = { viewModel.previousMonth() }) {
-                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "Previous")
-                            }
-                            Text(
-                                uiState.currentPeriod?.label ?: "",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            IconButton(onClick = { viewModel.nextMonth() }) {
-                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, "Next")
-                            }
-                        }
-                        IconButton(onClick = onNavigateToSettings) {
-                            Icon(Icons.Filled.Settings, "Settings")
-                        }
-                    }
+    Column(modifier = modifier.fillMaxSize()) {
+        // Month Selector & Profile Top Bar (Fixed)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { viewModel.previousMonth() }) {
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "Previous")
                 }
+                Text(
+                    uiState.currentPeriod?.label ?: "",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                IconButton(onClick = { viewModel.nextMonth() }) {
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, "Next")
+                }
+            }
+            IconButton(onClick = onNavigateToSettings) {
+                Icon(Icons.Filled.AccountCircle, "Profile")
+            }
+        }
+
+        Box(modifier = Modifier.fillMaxSize().weight(1f)) {
+            if (uiState.isLoading) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else if (uiState.recentExpenses.isEmpty() && uiState.totalSpent == 0.0) {
+                // ---- Empty state ----
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        Icons.Filled.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        "Track your first expense!",
+                        style = MaterialTheme.typography.titleLarge,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Tap the + button to add an expense and start tracking your spending.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                // ---- Main content ----
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp)
+                ) {
 
                 // Summary card
                 item {
@@ -214,6 +216,7 @@ fun HomeScreen(
             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 80.dp)
         )
     }
+}
 
     // ---- Expense detail bottom sheet ----
     selectedExpense?.let { expense ->

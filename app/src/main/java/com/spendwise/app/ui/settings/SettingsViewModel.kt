@@ -13,8 +13,10 @@ import com.spendwise.app.domain.model.RecurringInterval
 import com.spendwise.app.domain.repository.CategoryRepository
 import com.spendwise.app.domain.repository.ExpenseRepository
 import com.spendwise.app.domain.repository.UserPreferencesRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 
@@ -79,7 +81,9 @@ class SettingsViewModel(
                     _uiState.update { it.copy(exportStatus = OperationStatus.Error("No expenses to export")) }
                     return@launch
                 }
-                val success = csvExporter.exportToUri(expenses, uri)
+                val success = withContext(Dispatchers.IO) {
+                    csvExporter.exportToUri(expenses, uri)
+                }
                 _uiState.update {
                     it.copy(
                         exportStatus = if (success) OperationStatus.Success("Exported ${expenses.size} expenses")
@@ -104,7 +108,9 @@ class SettingsViewModel(
                     _uiState.update { it.copy(exportStatus = OperationStatus.Error("No expenses to export")) }
                     return@launch
                 }
-                val file = csvExporter.exportToCache(expenses)
+                val file = withContext(Dispatchers.IO) {
+                    csvExporter.exportToCache(expenses)
+                }
                 csvExporter.shareFile(file)
                 _uiState.update { it.copy(exportStatus = OperationStatus.Success("Shared ${expenses.size} expenses")) }
             } catch (e: Exception) {
