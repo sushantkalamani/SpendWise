@@ -40,6 +40,18 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val versionName = remember(context) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.packageManager.getPackageInfo(context.packageName, PackageManager.PackageInfoFlags.of(0)).versionName
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getPackageInfo(context.packageName, 0).versionName
+            }
+        } catch (e: Exception) {
+            "2.2.1"
+        }
+    }
 
     // Notification permission launcher for Android 13+
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -96,7 +108,7 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text("Profile & Settings") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") } }
             )
         },
@@ -330,7 +342,7 @@ fun SettingsScreen(
             // ABOUT
             Text("ABOUT", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 16.dp))
             ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                ListItem(headlineContent = { Text("SpendWise v2.0.0") })
+                ListItem(headlineContent = { Text("SpendWise v$versionName") })
             }
 
             Spacer(Modifier.height(32.dp))
